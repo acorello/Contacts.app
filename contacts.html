@@ -9,12 +9,42 @@
 
 <body>
     <h1>Contacts App</h1>
+
+    {{ block "search-contacts-form" . }}
+    <form action="/contacts/" method="get" class="tool-bar">
+        <label for="SearchTerm">Search Term</label>
+        <input type="search" id="SearchTerm" name="SearchTerm" value="{{ .SearchTerm }}" />
+        <input type="submit" value="Search" />
+    </form>
+    {{ end }}
+
+    <p><a href="/contacts/new">Add Contact</a></p>
+
     {{ if .Contacts }}
-    <ul>
-        {{ range .Contacts }}
-        <li>Name: {{ .Name }}</li>
-        {{ end }}
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>First</th>
+                <th>Last</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range .Contacts }}
+            <tr>
+                <td>{{ .First }}</td>
+                <td>{{ .Last }}</td>
+                <td>{{ .Phone }}</td>
+                <td>{{ .Email }}</td>
+                <td><a href="/contacts/{{ .Id }}/edit">📝</a>
+                    <a href="/contacts/{{ .Id }}">🪪</a>
+                </td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
     {{ else }}
     <p>No Contacts</p>
     {{ end }}

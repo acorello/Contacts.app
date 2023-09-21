@@ -40,17 +40,19 @@ func contactsHandler(w http.ResponseWriter, r *http.Request) {
 
 func getContacts(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
-	keyword := q.Get("q")
-	keyword = strings.TrimSpace(keyword)
+	searchTerm := q.Get("SearchTerm")
+	searchTerm = strings.TrimSpace(searchTerm)
 	var contacts []Contact
-	if keyword == "" {
+	if searchTerm == "" {
 		contacts = contactRepository.FindAll()
 	} else {
-		contacts = contactRepository.FindByKeyword(keyword)
+		contacts = contactRepository.FindBySearchTerm(searchTerm)
 	}
-	err := concactsTemplate.ExecuteTemplate(w, "contacts.html", map[string]any{
-		"Contacts": contacts,
-	})
+	err := concactsTemplate.ExecuteTemplate(w, "contacts.html",
+		map[string]any{
+			"SearchTerm": searchTerm,
+			"Contacts":   contacts,
+		})
 	if err != nil {
 		log.Printf("error rendering template: %v", err)
 	}
@@ -63,7 +65,15 @@ func LoggingHandler(h http.Handler) http.HandlerFunc {
 	}
 }
 
-var contactRepository ContactRepository = make([]Contact, 0)
+var contactRepository ContactRepository = []Contact{
+	{
+		Id:    "0",
+		First: "Joe",
+		Last:  "Bloggs",
+		Phone: "+44(0)751123456",
+		Email: "joebloggs@example.com",
+	},
+}
 
 type ContactRepository []Contact
 
@@ -74,9 +84,9 @@ func (me ContactRepository) FindAll() (result []Contact) {
 	return
 }
 
-func (me ContactRepository) FindByKeyword(keyword string) (result []Contact) {
+func (me ContactRepository) FindBySearchTerm(term string) (result []Contact) {
 	for _, c := range me {
-		if strings.Contains(c.Name, keyword) {
+		if c.AnyFieldContains(term) {
 			result = append(result, c)
 		}
 	}
@@ -84,5 +94,10 @@ func (me ContactRepository) FindByKeyword(keyword string) (result []Contact) {
 }
 
 type Contact struct {
-	Name string
+	Id, First, Last, Phone, Email string
+}
+
+func (my Contact) AnyFieldContains(s string) bool {
+	p := strings.Contains
+	return p(my.First, s) || p(my.Last, s) || p(my.Phone, s) || p(my.Email, s)
 }
