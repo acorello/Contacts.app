@@ -16,6 +16,7 @@ import (
 var templates embed.FS
 
 var concactsTemplate = template.Must(template.ParseFS(templates, "contacts.html"))
+var concactTemplate = template.Must(template.ParseFS(templates, "contact.html"))
 var newContactTemplate = template.Must(template.ParseFS(templates, "contact_new.html"))
 
 func main() {
@@ -27,11 +28,23 @@ func main() {
 	mux.HandleFunc("/contacts",
 		LoggingHandler(http.HandlerFunc(contactsHandler)))
 
+	mux.HandleFunc("/contact",
+		LoggingHandler(http.HandlerFunc(contactHandler)))
+
 	mux.HandleFunc("/",
 		LoggingHandler(http.RedirectHandler("/contacts", http.StatusFound)))
 
 	if err := http.ListenAndServe("localhost:8080", mux); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func contactHandler(w http.ResponseWriter, r *http.Request) {
+	switch m := r.Method; m {
+	case http.MethodGet:
+		getContact(w, r)
+	default:
+		respondErrMethodNotImplemented(w, r)
 	}
 }
 
@@ -136,6 +149,18 @@ func makeNewContact(r *http.Request) (c Contact, err error) {
 	}
 }
 
+func getContact(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	id := q.Get("Id")
+	id = strings.TrimSpace(id)
+	contact, found := contactRepository.FindById(id)
+	if !found {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+		concactTemplate.Execute(w, contact)
+	}
+}
+
 func getContacts(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	searchTerm := q.Get("SearchTerm")
@@ -176,6 +201,15 @@ var contactRepository ContactRepository = []Contact{
 }
 
 type ContactRepository []Contact
+
+func (me ContactRepository) FindById(id string) (c Contact, found bool) {
+	for _, c := range me {
+		if c.Id == id {
+			return c, true
+		}
+	}
+	return c, false
+}
 
 func (me ContactRepository) FindAll() (result []Contact) {
 	for _, c := range me {
