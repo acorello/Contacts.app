@@ -15,9 +15,9 @@ import (
 //go:embed *.html
 var templates embed.FS
 
-var concactsTemplate = template.Must(template.ParseFS(templates, "contacts.html"))
-var concactTemplate = template.Must(template.ParseFS(templates, "contact.html"))
-var contactFormTemplate = template.Must(template.ParseFS(templates, "contact_form.html"))
+var concactsTemplate = parsedTemplateOrPanic("contacts.html")
+var concactTemplate = parsedTemplateOrPanic("contact.html")
+var contactFormTemplate = parsedTemplateOrPanic("contact_form.html")
 
 func main() {
 	mux := http.NewServeMux()
@@ -239,4 +239,8 @@ type Contact struct {
 func (my Contact) AnyFieldContains(s string) bool {
 	p := strings.Contains
 	return p(my.FirstName, s) || p(my.LastName, s) || p(my.Phone, s) || p(my.Email, s)
+}
+
+func parsedTemplateOrPanic(file string) *template.Template {
+	return template.Must(template.ParseFS(templates, file))
 }
