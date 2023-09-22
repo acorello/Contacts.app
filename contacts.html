@@ -23,14 +23,14 @@
     <h1>Contacts App</h1>
 
     {{ block "search-contacts-form" . }}
-    <form action="/contacts/" method="get" class="tool-bar">
+    <form action="/contacts" method="get" class="tool-bar">
         <label for="SearchTerm">Search Term</label>
         <input type="search" id="SearchTerm" name="SearchTerm" value="{{ .SearchTerm }}" />
         <input type="submit" value="Search" />
     </form>
     {{ end }}
 
-    <p><a href="/contacts/new">Add Contact</a></p>
+    <p><a href="/contact/new">Add Contact</a></p>
 
     {{ if .Contacts }}
     <table>
@@ -50,8 +50,8 @@
                 <td>{{ .LastName }}</td>
                 <td>{{ .Phone }}</td>
                 <td>{{ .Email }}</td>
-                <td><a href="/contacts/{{ .Id }}/edit">📝</a>
-                    <a href="/contacts/{{ .Id }}">🪪</a>
+                <td><a href="/contact/{{ .Id }}/edit">📝</a>
+                    <a href="/contact/{{ .Id }}">🪪</a>
                 </td>
             </tr>
             {{ end }}

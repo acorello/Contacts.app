@@ -21,14 +21,14 @@ var newContactTemplate = template.Must(template.ParseFS(templates, "contacts_new
 func main() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/contacts/new",
+	mux.HandleFunc("/contact/new",
 		LoggingHandler(http.HandlerFunc(newContactHandler)))
 
-	mux.HandleFunc("/contacts/",
+	mux.HandleFunc("/contacts",
 		LoggingHandler(http.HandlerFunc(contactsHandler)))
 
 	mux.HandleFunc("/",
-		LoggingHandler(http.RedirectHandler("/contacts/", http.StatusFound)))
+		LoggingHandler(http.RedirectHandler("/contacts", http.StatusFound)))
 
 	if err := http.ListenAndServe("localhost:8080", mux); err != nil {
 		log.Fatal(err)
@@ -89,7 +89,7 @@ func postNewContactForm(w http.ResponseWriter, r *http.Request) {
 		newContact.Id = uuid.NewString()
 		contactRepository.Store(newContact)
 		log.Printf("Stored: %#v", newContact)
-		http.Redirect(w, r, "/contacts/", http.StatusFound)
+		http.Redirect(w, r, "/contacts", http.StatusFound)
 	}
 }
 
