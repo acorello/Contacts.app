@@ -17,13 +17,13 @@ var templates embed.FS
 
 var concactsTemplate = template.Must(template.ParseFS(templates, "contacts.html"))
 var concactTemplate = template.Must(template.ParseFS(templates, "contact.html"))
-var newContactTemplate = template.Must(template.ParseFS(templates, "contact_new.html"))
+var contactFormTemplate = template.Must(template.ParseFS(templates, "contact_form.html"))
 
 func main() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/contact/new",
-		LoggingHandler(http.HandlerFunc(newContactHandler)))
+	mux.HandleFunc("/contact/form",
+		LoggingHandler(http.HandlerFunc(contactFormHandler)))
 
 	mux.HandleFunc("/contacts",
 		LoggingHandler(http.HandlerFunc(contactsHandler)))
@@ -48,12 +48,12 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func newContactHandler(w http.ResponseWriter, r *http.Request) {
+func contactFormHandler(w http.ResponseWriter, r *http.Request) {
 	switch method := r.Method; method {
 	case http.MethodGet:
-		getNewContactForm(w, r)
+		getContactForm(w, r)
 	case http.MethodPost:
-		postNewContactForm(w, r)
+		postContactForm(w, r)
 	default:
 		respondErrMethodNotImplemented(w, r)
 	}
@@ -73,27 +73,27 @@ func respondErrMethodNotImplemented(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, msg, http.StatusNotImplemented)
 }
 
-func getNewContactForm(w http.ResponseWriter, r *http.Request) {
-	args := NewContactForm{Errors: make(ErrorMap)}
-	if err := newContactTemplate.Execute(w, args); err != nil {
+func getContactForm(w http.ResponseWriter, r *http.Request) {
+	args := ContactForm{Errors: make(ErrorMap)}
+	if err := contactFormTemplate.Execute(w, args); err != nil {
 		log.Printf("error rendering template: %v", err)
 	}
 }
 
-type NewContactForm struct {
+type ContactForm struct {
 	Contact
 	Errors error
 }
 
-func postNewContactForm(w http.ResponseWriter, r *http.Request) {
+func postContactForm(w http.ResponseWriter, r *http.Request) {
 	newContact, err := makeNewContact(r)
 	if err != nil {
 		log.Printf("%#v", err)
-		args := NewContactForm{
+		args := ContactForm{
 			Contact: newContact,
 			Errors:  err,
 		}
-		if err := newContactTemplate.Execute(w, args); err != nil {
+		if err := contactFormTemplate.Execute(w, args); err != nil {
 			log.Printf("error rendering template: %v", err)
 		}
 	} else {
