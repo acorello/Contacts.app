@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 //go:embed *.html
@@ -84,6 +86,7 @@ func postNewContactForm(w http.ResponseWriter, r *http.Request) {
 			log.Printf("error rendering template: %v", err)
 		}
 	} else {
+		newContact.Id = uuid.NewString()
 		contactRepository.Store(newContact)
 		log.Printf("Stored: %#v", newContact)
 		http.Redirect(w, r, "/contacts/", http.StatusFound)
