@@ -14,6 +14,7 @@
 
     {{ block "contact_form" . }}
     <form action="/contact/form" method="post">
+        <input type="hidden" name="Id" value="{{ .Id }}">
         <fieldset>
             <legend>Contact Values</legend>
             <p>

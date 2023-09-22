@@ -74,9 +74,27 @@ func respondErrMethodNotImplemented(w http.ResponseWriter, r *http.Request) {
 }
 
 func getContactForm(w http.ResponseWriter, r *http.Request) {
-	args := ContactForm{Errors: make(ErrorMap)}
-	if err := contactFormTemplate.Execute(w, args); err != nil {
-		log.Printf("error rendering template: %v", err)
+	q := r.URL.Query()
+	var renderingError error
+	if editContact := q.Has("Id"); !editContact {
+		// blank form to create a new contact
+		contactForm := ContactForm{Errors: make(ErrorMap)}
+		renderingError = contactFormTemplate.Execute(w, contactForm)
+	} else {
+		id := q.Get("Id")
+		id = strings.TrimSpace(id)
+		contact, found := contactRepository.FindById(id)
+		if !found {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			contactFormTemplate.Execute(w, ContactForm{
+				Contact: contact,
+				Errors:  make(ErrorMap),
+			})
+		}
+	}
+	if renderingError != nil {
+		log.Printf("error rendering template: %v", renderingError)
 	}
 }
 
@@ -86,21 +104,25 @@ type ContactForm struct {
 }
 
 func postContactForm(w http.ResponseWriter, r *http.Request) {
-	newContact, err := makeNewContact(r)
+	var renderingError error
+	contact, err := parseContactForm(r)
 	if err != nil {
 		log.Printf("%#v", err)
-		args := ContactForm{
-			Contact: newContact,
+		contactForm := ContactForm{
+			Contact: contact,
 			Errors:  err,
 		}
-		if err := contactFormTemplate.Execute(w, args); err != nil {
-			log.Printf("error rendering template: %v", err)
-		}
+		renderingError = contactFormTemplate.Execute(w, contactForm)
 	} else {
-		newContact.Id = uuid.NewString()
-		contactRepository.Store(newContact)
-		log.Printf("Stored: %#v", newContact)
+		if contact.Id == "" {
+			contact.Id = uuid.NewString()
+		}
+		contactRepository.Store(contact)
+		log.Printf("Stored: %#v", contact)
 		http.Redirect(w, r, "/contacts", http.StatusFound)
+	}
+	if renderingError != nil {
+		log.Printf("error rendering template: %v", renderingError)
 	}
 }
 
@@ -123,6 +145,12 @@ func (my ValidatingValues) ErrorsMap() map[string]string {
 	return my.ErrorMap
 }
 
+func (my ValidatingValues) String(name string) string {
+	v := my.Get(name)
+	v = strings.TrimSpace(v)
+	return v
+}
+
 func (my ValidatingValues) NotEmptyString(name string) string {
 	v := my.Get(name)
 	v = strings.TrimSpace(v)
@@ -132,12 +160,13 @@ func (my ValidatingValues) NotEmptyString(name string) string {
 	return v
 }
 
-func makeNewContact(r *http.Request) (c Contact, err error) {
+func parseContactForm(r *http.Request) (c Contact, err error) {
 	r.ParseForm()
 	form := ValidatingValues{
 		Values:   r.Form,
 		ErrorMap: make(ErrorMap),
 	}
+	c.Id = form.String("Id")
 	c.FirstName = form.NotEmptyString("FirstName")
 	c.LastName = form.NotEmptyString("LastName")
 	c.Email = form.NotEmptyString("Email")
@@ -154,8 +183,11 @@ func getContact(w http.ResponseWriter, r *http.Request) {
 	id := q.Get("Id")
 	id = strings.TrimSpace(id)
 	contact, found := contactRepository.FindById(id)
-	if !found {
+	hasIdArg := q.Has("Id")
+	if hasIdArg && !found {
 		w.WriteHeader(http.StatusNotFound)
+	} else if !hasIdArg {
+		w.WriteHeader(http.StatusBadRequest)
 	} else {
 		concactTemplate.Execute(w, contact)
 	}
@@ -219,6 +251,12 @@ func (me ContactRepository) FindAll() (result []Contact) {
 }
 
 func (me *ContactRepository) Store(c Contact) error {
+	for i, x := range *me {
+		if x.Id == c.Id {
+			(*me)[i] = c
+			return nil
+		}
+	}
 	*me = append(*me, c)
 	return nil
 }
