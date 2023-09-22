@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts App</title>
+</head>
+
+<body>
+    <h1>Contacts App</h1>
+
+    {{ block "new-contact-form" . }}
+    <h2>New Contact</h2>
+    <form action="/contacts/new" method="post">
+        <fieldset>
+            <legend>Contact Values</legend>
+            <p>
+                <label for="Email">Email</label>
+                <input name="Email" id="Email" type="email" placeholder="Email" value="{{ .Email }}">
+                <span class="error">{{ .Errors.Email }}</span>
+            </p>
+            <p>
+                <label for="FirstName">First Name</label>
+                <input name="FirstName" id="FirstName" type="text" placeholder="First Name"
+                    value="{{ .FirstName }}">
+                <span class="error">{{ .Errors.FirstName }}</span>
+            </p>
+            <p>
+                <label for="LastName">Last Name</label>
+                <input name="LastName" id="LastName" type="text" placeholder="Last Name"
+                    value="{{ .LastName }}">
+                <span class="error">{{ .Errors.LastName }}</span>
+            </p>
+            <p>
+                <label for="Phone">Phone</label>
+                <input name="Phone" id="Phone" type="text" placeholder="Phone" value="{{ .Phone }}">
+                <span class="error">{{ .Errors.Phone }}</span>
+            </p>
+            <button>Save</button>
+        </fieldset>
+    </form>
+    {{ end }}
+    <p>
+        <a href="/contacts/">Back</a>
+    </p>
+
+</body>
+
+</html>
