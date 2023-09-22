@@ -16,7 +16,7 @@ import (
 var templates embed.FS
 
 var concactsTemplate = template.Must(template.ParseFS(templates, "contacts.html"))
-var newContactTemplate = template.Must(template.ParseFS(templates, "contacts_new.html"))
+var newContactTemplate = template.Must(template.ParseFS(templates, "contact_new.html"))
 
 func main() {
 	mux := http.NewServeMux()
@@ -61,9 +61,8 @@ func respondErrMethodNotImplemented(w http.ResponseWriter, r *http.Request) {
 }
 
 func getNewContactForm(w http.ResponseWriter, r *http.Request) {
-	templateId := "contacts_new.html"
 	args := NewContactForm{Errors: make(ErrorMap)}
-	if err := newContactTemplate.ExecuteTemplate(w, templateId, args); err != nil {
+	if err := newContactTemplate.Execute(w, args); err != nil {
 		log.Printf("error rendering template: %v", err)
 	}
 }
@@ -77,12 +76,11 @@ func postNewContactForm(w http.ResponseWriter, r *http.Request) {
 	newContact, err := makeNewContact(r)
 	if err != nil {
 		log.Printf("%#v", err)
-		templateId := "contacts_new.html"
 		args := NewContactForm{
 			Contact: newContact,
 			Errors:  err,
 		}
-		if err := newContactTemplate.ExecuteTemplate(w, templateId, args); err != nil {
+		if err := newContactTemplate.Execute(w, args); err != nil {
 			log.Printf("error rendering template: %v", err)
 		}
 	} else {
