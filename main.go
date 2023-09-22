@@ -33,7 +33,9 @@ func main() {
 	mux.HandleFunc("/",
 		LoggingHandler(http.RedirectHandler("/contacts", http.StatusFound)))
 
-	if err := http.ListenAndServe("localhost:8080", mux); err != nil {
+	address := "localhost:8080"
+	log.Printf("Starting server at %q", address)
+	if err := http.ListenAndServe(address, mux); err != nil {
 		log.Fatal(err)
 	}
 }
