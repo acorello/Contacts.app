@@ -13,6 +13,7 @@
     <h2>Contact</h2>
 
     {{ block "contact_form" . }}
+
     <form action="/contact/form" method="post">
         <input type="hidden" name="Id" value="{{ .Id }}">
         <fieldset>
@@ -41,6 +42,11 @@
             </p>
             <button>Save</button>
         </fieldset>
+    </form>
+    <form action="/contact/form" method="post">
+        <input type="hidden" name="Id" value="{{ .Id }}" />
+        <input type="hidden" name="_DELETE_" />
+        <button>Delete</button>
     </form>
     {{ end }}
     <p>

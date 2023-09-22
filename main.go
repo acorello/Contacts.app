@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/google/uuid"
@@ -104,7 +103,15 @@ type ContactForm struct {
 }
 
 func postContactForm(w http.ResponseWriter, r *http.Request) {
+	form := NewValidatingValues(r)
 	var renderingError error
+	if form.Has("_DELETE_") {
+		if !r.Form.Has("Id") {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+		id := form.Get("Id") //TODO: rename additional readers with Get prefix
+		contactRepository.Delete(id)
+	}
 	contact, err := parseContactForm(r)
 	if err != nil {
 		log.Printf("%#v", err)
@@ -126,46 +133,8 @@ func postContactForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type ValidatingValues struct {
-	url.Values
-	ErrorMap
-}
-
-type ErrorMap map[string]string
-
-func (my ErrorMap) Error() string {
-	return fmt.Sprintf("%#v", my)
-}
-
-func (my ValidatingValues) HasErrors() bool {
-	return len(my.ErrorMap) > 0
-}
-
-func (my ValidatingValues) ErrorsMap() map[string]string {
-	return my.ErrorMap
-}
-
-func (my ValidatingValues) String(name string) string {
-	v := my.Get(name)
-	v = strings.TrimSpace(v)
-	return v
-}
-
-func (my ValidatingValues) NotEmptyString(name string) string {
-	v := my.Get(name)
-	v = strings.TrimSpace(v)
-	if len(v) == 0 {
-		my.ErrorMap[name] = "blank or empty"
-	}
-	return v
-}
-
 func parseContactForm(r *http.Request) (c Contact, err error) {
-	r.ParseForm()
-	form := ValidatingValues{
-		Values:   r.Form,
-		ErrorMap: make(ErrorMap),
-	}
+	form := NewValidatingValues(r)
 	c.Id = form.String("Id")
 	c.FirstName = form.NotEmptyString("FirstName")
 	c.LastName = form.NotEmptyString("LastName")
@@ -241,6 +210,16 @@ func (me ContactRepository) FindById(id string) (c Contact, found bool) {
 		}
 	}
 	return c, false
+}
+
+func (me ContactRepository) Delete(id string) {
+	for i, c := range me {
+		if c.Id == id {
+			me[i] = me[len(me)-1]
+			me[len(me)-1] = Contact{}
+			me = me[:len(me)-1]
+		}
+	}
 }
 
 func (me ContactRepository) FindAll() (result []Contact) {
