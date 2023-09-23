@@ -48,7 +48,7 @@
             </fieldset>
         </form>
         <form hx-delete="/contact?Id={{ .Id }}" hx-target="#main" hx-select="#main" hx-swap="outerHTML"
-            hx-push-url="true">
+            hx-push-url="true" hx-trigger="keyup[ctrlKey && key == 'd'] from:body">
             <button>Delete</button>
         </form>
         {{ end }}
