@@ -14,9 +14,10 @@ import (
 //go:embed *.html
 var templates embed.FS
 
-var concactsTemplate = parsedTemplateOrPanic("contacts.html")
-var concactTemplate = parsedTemplateOrPanic("contact.html")
-var contactFormTemplate = parsedTemplateOrPanic("contact_form.html")
+//go:embed static/*
+var static embed.FS
+
+var htmlTemplates = parsedTemplateOrPanic("layout.html", "contacts.html", "contact.html", "contact_form.html")
 
 func main() {
 	mux := http.NewServeMux()
@@ -29,6 +30,9 @@ func main() {
 
 	mux.HandleFunc("/contact",
 		LoggingHandler(http.HandlerFunc(contactHandler)))
+
+	mux.HandleFunc("/static/",
+		LoggingHandler(http.FileServer(http.FS(static))))
 
 	mux.HandleFunc("/",
 		LoggingHandler(http.RedirectHandler("/contacts", http.StatusFound)))
@@ -82,7 +86,7 @@ func getContactForm(w http.ResponseWriter, r *http.Request) {
 	if editContact := q.Has("Id"); !editContact {
 		// blank form to create a new contact
 		contactForm := ContactForm{Errors: make(ErrorMap)}
-		renderingError = contactFormTemplate.Execute(w, contactForm)
+		renderingError = htmlTemplates.ExecuteTemplate(w, "contact_form.html", contactForm)
 	} else {
 		id := q.Get("Id")
 		id = strings.TrimSpace(id)
@@ -90,7 +94,7 @@ func getContactForm(w http.ResponseWriter, r *http.Request) {
 		if !found {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			contactFormTemplate.Execute(w, ContactForm{
+			renderingError = htmlTemplates.ExecuteTemplate(w, "contact_form.html", ContactForm{
 				Contact: contact,
 				Errors:  make(ErrorMap),
 			})
@@ -123,7 +127,7 @@ func postContactForm(w http.ResponseWriter, r *http.Request) {
 			Contact: contact,
 			Errors:  err,
 		}
-		renderingError = contactFormTemplate.Execute(w, contactForm)
+		renderingError = htmlTemplates.ExecuteTemplate(w, "contact_form.html", contactForm)
 	} else {
 		if contact.Id == "" {
 			contact.Id = uuid.NewString()
@@ -162,7 +166,7 @@ func getContact(w http.ResponseWriter, r *http.Request) {
 	} else if !hasIdArg {
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
-		concactTemplate.Execute(w, contact)
+		htmlTemplates.ExecuteTemplate(w, "contact.html", contact)
 	}
 }
 
@@ -195,12 +199,11 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Listing contacts containing %q", searchTerm)
 		contacts = contactRepository.FindBySearchTerm(searchTerm)
 	}
-	templateId := "contacts.html"
 	args := map[string]any{
 		"SearchTerm": searchTerm,
 		"Contacts":   contacts,
 	}
-	if err := concactsTemplate.ExecuteTemplate(w, templateId, args); err != nil {
+	if err := htmlTemplates.ExecuteTemplate(w, "contacts.html", args); err != nil {
 		log.Printf("error rendering template: %v", err)
 	}
 }
@@ -281,6 +284,6 @@ func (my Contact) AnyFieldContains(s string) bool {
 	return p(my.FirstName, s) || p(my.LastName, s) || p(my.Phone, s) || p(my.Email, s)
 }
 
-func parsedTemplateOrPanic(file string) *template.Template {
-	return template.Must(template.ParseFS(templates, file))
+func parsedTemplateOrPanic(file ...string) *template.Template {
+	return template.Must(template.ParseFS(templates, file...))
 }
