@@ -47,7 +47,8 @@
                 <button>Save</button>
             </fieldset>
         </form>
-        <form hx-delete="/contact?Id={{ .Id }}" hx-target="#main" hx-select="#main" hx-swap="outerHTML">
+        <form hx-delete="/contact?Id={{ .Id }}" hx-target="#main" hx-select="#main" hx-swap="outerHTML"
+            hx-push-url="true">
             <button>Delete</button>
         </form>
         {{ end }}
