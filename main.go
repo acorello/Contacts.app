@@ -3,21 +3,18 @@ package main
 import (
 	"embed"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"strings"
 
+	"dev.acorello.it/go/contacts/templates"
 	"github.com/google/uuid"
 )
-
-//go:embed *.html
-var templates embed.FS
 
 //go:embed static/*
 var static embed.FS
 
-var htmlTemplates = parsedTemplateOrPanic("layout.html", "contacts.html", "contact.html", "contact_form.html")
+var htmlTemplates = templates.ParsedTemplateOrPanic("layout.html", "contacts.html", "contact.html", "contact_form.html")
 
 func main() {
 	mux := http.NewServeMux()
@@ -282,8 +279,4 @@ type Contact struct {
 func (my Contact) AnyFieldContains(s string) bool {
 	p := strings.Contains
 	return p(my.FirstName, s) || p(my.LastName, s) || p(my.Phone, s) || p(my.Email, s)
-}
-
-func parsedTemplateOrPanic(file ...string) *template.Template {
-	return template.Must(template.ParseFS(templates, file...))
 }
