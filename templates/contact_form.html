@@ -40,8 +40,11 @@
                 <button>Save</button>
             </fieldset>
         </form>
-        <button hx-delete="/contact?Id={{ .Id }}" hx-target="#main" hx-select="#main" hx-swap="outerHTML"
-            hx-push-url="true" hx-trigger="click, keyup[ctrlKey && key == 'd'] from:body">Delete</button>
+        <form action="/contact?Id={{ .Id }}" method="delete" hx-boost="true"
+            hx-trigger="click, keyup[ctrlKey && key == 'd'] from:body">
+            <input type="hidden" name="tag" value="taggd">
+            <button>Delete</button>
+        </form>
         {{ end }}
         <p>
             <a href="/contacts" hx-boost="true">Back</a>
