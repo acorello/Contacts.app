@@ -233,12 +233,14 @@ func (me ContactRepository) FindById(id string) (c Contact, found bool) {
 	return c, false
 }
 
-func (me ContactRepository) Delete(id string) {
-	for i, c := range me {
+func (me *ContactRepository) Delete(id string) {
+	contacts := *me
+	for i, c := range contacts {
 		if c.Id == id {
-			me[i] = me[len(me)-1]
-			me[len(me)-1] = Contact{}
-			me = me[:len(me)-1]
+			contacts[i] = contacts[len(contacts)-1]
+			contacts[len(contacts)-1] = Contact{}
+			*me = contacts[:len(contacts)-1]
+			return
 		}
 	}
 }
