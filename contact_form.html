@@ -11,51 +11,50 @@
 </head>
 
 <body>
-    <h1>Contacts App</h1>
+    <div id="main">
+        <h1>Contacts App</h1>
 
-    <h2>Contact</h2>
+        <h2>Contact</h2>
 
-    {{ block "contact_form" . }}
+        {{ block "contact_form" . }}
 
-    <form action="/contact/form" method="post">
-        <input type="hidden" name="Id" value="{{ .Id }}">
-        <fieldset>
-            <legend>Contact Values</legend>
-            <p>
-                <label for="Email">Email</label>
-                <input name="Email" id="Email" type="email" placeholder="Email" value="{{ .Email }}">
-                <span class="error">{{ .Errors.Email }}</span>
-            </p>
-            <p>
-                <label for="FirstName">First Name</label>
-                <input name="FirstName" id="FirstName" type="text" placeholder="First Name"
-                    value="{{ .FirstName }}">
-                <span class="error">{{ .Errors.FirstName }}</span>
-            </p>
-            <p>
-                <label for="LastName">Last Name</label>
-                <input name="LastName" id="LastName" type="text" placeholder="Last Name"
-                    value="{{ .LastName }}">
-                <span class="error">{{ .Errors.LastName }}</span>
-            </p>
-            <p>
-                <label for="Phone">Phone</label>
-                <input name="Phone" id="Phone" type="text" placeholder="Phone" value="{{ .Phone }}">
-                <span class="error">{{ .Errors.Phone }}</span>
-            </p>
-            <button>Save</button>
-        </fieldset>
-    </form>
-    <form action="/contact/form" method="post">
-        <input type="hidden" name="Id" value="{{ .Id }}" />
-        <input type="hidden" name="_DELETE_" />
-        <button>Delete</button>
-    </form>
-    {{ end }}
-    <p>
-        <a href="/contacts">Back</a>
-    </p>
-
+        <form action="/contact/form" method="post">
+            <input type="hidden" name="Id" value="{{ .Id }}">
+            <fieldset>
+                <legend>Contact Values</legend>
+                <p>
+                    <label for="Email">Email</label>
+                    <input name="Email" id="Email" type="email" placeholder="Email" value="{{ .Email }}">
+                    <span class="error">{{ .Errors.Email }}</span>
+                </p>
+                <p>
+                    <label for="FirstName">First Name</label>
+                    <input name="FirstName" id="FirstName" type="text" placeholder="First Name"
+                        value="{{ .FirstName }}">
+                    <span class="error">{{ .Errors.FirstName }}</span>
+                </p>
+                <p>
+                    <label for="LastName">Last Name</label>
+                    <input name="LastName" id="LastName" type="text" placeholder="Last Name"
+                        value="{{ .LastName }}">
+                    <span class="error">{{ .Errors.LastName }}</span>
+                </p>
+                <p>
+                    <label for="Phone">Phone</label>
+                    <input name="Phone" id="Phone" type="text" placeholder="Phone" value="{{ .Phone }}">
+                    <span class="error">{{ .Errors.Phone }}</span>
+                </p>
+                <button>Save</button>
+            </fieldset>
+        </form>
+        <form hx-delete="/contact?Id={{ .Id }}" hx-target="#main" hx-select="#main" hx-swap="outerHTML">
+            <button>Delete</button>
+        </form>
+        {{ end }}
+        <p>
+            <a href="/contacts">Back</a>
+        </p>
+    </div>
 </body>
 
 </html>

@@ -11,17 +11,19 @@
 </head>
 
 <body>
-    <h1>Contact</h1>
+    <div id="main">
+        <h1>Contact</h1>
 
-    <h2>{{ .LastName }}, {{ .FirstName }}</h2>
-    <div>
-        <div>Phone: <span>{{ .Phone }}</span></div>
-        <div>Email: <span>{{ .Email }}</span></div>
+        <h2>{{ .LastName }}, {{ .FirstName }}</h2>
+        <div>
+            <div>Phone: <span>{{ .Phone }}</span></div>
+            <div>Email: <span>{{ .Email }}</span></div>
+        </div>
+        <p>
+            <a href="/contact/form?id={{ .Id }}">Edit</a>
+            <a href="/contacts">Back</a>
+        </p>
     </div>
-    <p>
-        <a href="/contact/form?id={{ .Id }}">Edit</a>
-        <a href="/contacts">Back</a>
-    </p>
 </body>
 
 </html>

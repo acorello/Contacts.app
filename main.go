@@ -44,6 +44,8 @@ func contactHandler(w http.ResponseWriter, r *http.Request) {
 	switch m := r.Method; m {
 	case http.MethodGet:
 		getContact(w, r)
+	case http.MethodDelete:
+		deleteContact(w, r)
 	default:
 		respondErrMethodNotImplemented(w, r)
 	}
@@ -161,6 +163,23 @@ func getContact(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
 		concactTemplate.Execute(w, contact)
+	}
+}
+
+func deleteContact(w http.ResponseWriter, r *http.Request) {
+	form := NewValidatingValues(r)
+	var renderingError error
+	if !form.Has("Id") {
+		msg := fmt.Sprintf("Missing %q from submitted form: %#v", "Id", r.Form)
+		http.Error(w, msg, http.StatusBadRequest)
+		log.Print(msg)
+		return
+	}
+	id := form.String("Id") //TODO: rename additional readers with Get prefix
+	contactRepository.Delete(id)
+	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
+	if renderingError != nil {
+		log.Printf("error rendering template: %v", renderingError)
 	}
 }
 
