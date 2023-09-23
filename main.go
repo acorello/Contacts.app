@@ -1,18 +1,15 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
+	"dev.acorello.it/go/contacts/static"
 	"dev.acorello.it/go/contacts/templates"
 	"github.com/google/uuid"
 )
-
-//go:embed static/*
-var static embed.FS
 
 var htmlTemplates = templates.ParsedTemplateOrPanic("layout.html", "contacts.html", "contact.html", "contact_form.html")
 
@@ -29,7 +26,7 @@ func main() {
 		LoggingHandler(http.HandlerFunc(contactHandler)))
 
 	mux.HandleFunc("/static/",
-		LoggingHandler(http.FileServer(http.FS(static))))
+		LoggingHandler(static.FileServer()))
 
 	mux.HandleFunc("/",
 		LoggingHandler(http.RedirectHandler("/contacts", http.StatusFound)))
