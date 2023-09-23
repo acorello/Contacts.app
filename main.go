@@ -105,15 +105,7 @@ type ContactForm struct {
 }
 
 func postContactForm(w http.ResponseWriter, r *http.Request) {
-	form := NewValidatingValues(r)
 	var renderingError error
-	if form.Has("_DELETE_") {
-		if !r.Form.Has("Id") {
-			w.WriteHeader(http.StatusBadRequest)
-		}
-		id := form.Get("Id") //TODO: rename additional readers with Get prefix
-		contactRepository.Delete(id)
-	}
 	contact, err := parseContactForm(r)
 	if err != nil {
 		log.Printf("%#v", err)
