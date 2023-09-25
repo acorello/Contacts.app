@@ -2,12 +2,22 @@ package templates
 
 import (
 	"embed"
-	"html/template"
+	"fmt"
 )
 
 //go:embed *.html
-var templates embed.FS
+var fs embed.FS
 
-func ParsedTemplateOrPanic(file ...string) *template.Template {
-	return template.Must(template.ParseFS(templates, file...))
+func CommonFS() embed.FS {
+	return fs
+}
+
+type ErrorMap map[string]error
+
+func NewErrorMap() ErrorMap {
+	return make(ErrorMap)
+}
+
+func (my ErrorMap) Error() string {
+	return fmt.Sprintf("%#v", my)
 }

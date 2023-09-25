@@ -4,13 +4,9 @@
 {{ template "head" }}
 
 <body>
+    {{ define "main" }}
     <main>
-        <h1>Contacts App</h1>
-
         <h2>Contact</h2>
-
-        {{ block "contact_form" . }}
-
         <form action="/contact/form" method="post">
             <input type="hidden" name="Id" value="{{ .Id }}">
             <fieldset>
@@ -45,11 +41,12 @@
             <input type="hidden" name="tag" value="taggd">
             <button>Delete</button>
         </form>
-        {{ end }}
+
         <p>
             <a href="/contacts" hx-boost="true">Back</a>
         </p>
     </main>
+    {{ end }}
 </body>
 
 </html>

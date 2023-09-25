@@ -13,7 +13,19 @@
 {{ end }}
 
 <body>
-    <h1>Layout</h1>
+    {{ block "header" . }}
+    <header>
+        <h1>LAYOUT</h1>
+    </header>
+    {{ end }}
+    {{ block "main" . }}
+    <main>
+        <p>MAIN</p>
+    </main>
+    {{ end }}
+    {{ block "footer" . }}
+    <footer>FOOTER</footer>
+    {{ end }}
 </body>
 
 </html>
