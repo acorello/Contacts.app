@@ -14,9 +14,10 @@ var repo = contact.NewPopulatedInMemoryContactRepository()
 func main() {
 	mux := http.NewServeMux()
 
-	contactHandler := http_contact.NewContactHandler(&repo)
+	const BASE_PATH = "/contact/"
+	contactHandler := http_contact.NewContactHandler(BASE_PATH, &repo)
 
-	mux.HandleFunc(http_contact.BASE_PATH, LoggingHandler(contactHandler))
+	mux.HandleFunc(BASE_PATH, LoggingHandler(contactHandler))
 
 	mux.HandleFunc("/static/",
 		LoggingHandler(static.FileServer()))

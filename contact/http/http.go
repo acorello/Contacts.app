@@ -8,7 +8,7 @@ import (
 
 	"dev.acorello.it/go/contacts/contact"
 	"dev.acorello.it/go/contacts/contact/template"
-	"dev.acorello.it/go/contacts/http_util"
+	_http "dev.acorello.it/go/contacts/http"
 	"github.com/google/uuid"
 )
 
@@ -23,48 +23,57 @@ import (
 // But in order for this to work we have to make this module path-aware… which actually it's OK, because this module is responsible of handling the HTTP requests for a resource, so has to know about parameter names and format, for example.
 //
 
-const (
-	BASE_PATH       = "/contact/"
-	form_path       = "/contact/form"
-	collection_path = "/contact/list"
-)
-
 type contactHTTPHandler struct {
+	basePath string
+	formPath string
+	listPath string
+
 	contactRepository contact.Repository
 }
 
-func NewContactHandler(r contact.Repository) contactHTTPHandler {
+// basePath should be absolute, end with '/', and have at least one element
+func NewContactHandler(basePath string, r contact.Repository) contactHTTPHandler {
+	const docMsg = "path should be absolute, end with '/', and have at least one element"
+	if !(len(basePath) > 2 && basePath[0] == '/' && basePath[len(basePath)] == '/') {
+		// panic: contract was violated, server requires this initialization
+		panic(fmt.Sprintf("%s, got %q", docMsg, basePath))
+	}
 	return contactHTTPHandler{
+		basePath: basePath,
+		formPath: basePath + "form",
+		listPath: basePath + "list",
+
 		contactRepository: r,
 	}
 }
 
+// expects to be bound to BASE_PATH, a folder. Will dispatch on any sub-path.
 func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch p := r.URL.Path; p {
-	case BASE_PATH:
+	case h.basePath:
 		switch r.Method {
 		case http.MethodGet:
 			h.Get(w, r)
 		case http.MethodDelete:
 			h.Delete(w, r)
 		default:
-			http_util.RespondErrMethodNotImplemented(w, r)
+			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case form_path:
+	case h.formPath:
 		switch r.Method {
 		case http.MethodGet:
 			h.GetForm(w, r)
 		case http.MethodPost:
 			h.PostForm(w, r)
 		default:
-			http_util.RespondErrMethodNotImplemented(w, r)
+			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case collection_path:
+	case h.listPath:
 		switch r.Method {
 		case http.MethodGet:
 			h.GetList(w, r)
 		default:
-			http_util.RespondErrMethodNotImplemented(w, r)
+			_http.RespondErrMethodNotImplemented(w, r)
 		}
 	default:
 		errorMsg := fmt.Sprintf("Path %q is not supported", p)
@@ -88,7 +97,7 @@ func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	form := http_util.NewUrlValues(r)
+	form := _http.NewUrlValues(r)
 	var renderingError error
 	if !form.Has("Id") {
 		msg := fmt.Sprintf("Missing %q from submitted form: %#v", "Id", r.Form)
@@ -167,7 +176,7 @@ func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseContactForm(r *http.Request) (c contact.Contact, err error) {
-	form := http_util.NewUrlValues(r)
+	form := _http.NewUrlValues(r)
 	errors := map[string]error{}
 	getAndCollect := func(get func(string) (string, error), key string, store *string) {
 		val, err := get(key)
