@@ -25,7 +25,7 @@ import (
 type contactHTTPHandler struct {
 	basePath string
 	formPath string
-	listPath string
+	ListPath string
 
 	contactRepository contact.Repository
 }
@@ -40,7 +40,7 @@ func NewContactHandler(basePath string, r contact.Repository) contactHTTPHandler
 	return contactHTTPHandler{
 		basePath: basePath,
 		formPath: basePath + "form",
-		listPath: basePath + "list",
+		ListPath: basePath + "list",
 
 		contactRepository: r,
 	}
@@ -67,7 +67,7 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.listPath:
+	case h.ListPath:
 		switch r.Method {
 		case http.MethodGet:
 			h.GetList(w, r)
@@ -116,7 +116,7 @@ func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.contactRepository.Delete(id)
-	http.Redirect(w, r, h.listPath, http.StatusSeeOther)
+	http.Redirect(w, r, h.ListPath, http.StatusSeeOther)
 	if renderingError != nil {
 		log.Printf("error rendering template: %v", renderingError)
 	}
@@ -135,7 +135,7 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 		}
 		h.contactRepository.Store(contactForm)
 		log.Printf("Stored: %#v", contactForm)
-		http.Redirect(w, r, h.listPath, http.StatusFound)
+		http.Redirect(w, r, h.ListPath, http.StatusFound)
 	}
 	if renderingError != nil {
 		log.Printf("error rendering template: %v", renderingError)

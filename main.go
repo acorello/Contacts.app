@@ -23,7 +23,7 @@ func main() {
 		LoggingHandler(static.FileServer()))
 
 	mux.HandleFunc("/",
-		LoggingHandler(http.RedirectHandler("/contact/list", http.StatusFound)))
+		LoggingHandler(http.RedirectHandler(contactHandler.ListPath, http.StatusFound)))
 
 	address := "localhost:8080"
 	log.Printf("Starting server at %q", address)
