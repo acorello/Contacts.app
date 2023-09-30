@@ -33,7 +33,7 @@ type contactHTTPHandler struct {
 // basePath should be absolute, end with '/', and have at least one element
 func NewContactHandler(basePath string, r contact.Repository) contactHTTPHandler {
 	const docMsg = "path should be absolute, end with '/', and have at least one element"
-	if !(len(basePath) > 2 && basePath[0] == '/' && basePath[len(basePath)] == '/') {
+	if !(len(basePath) > 2 && basePath[0] == '/' && basePath[len(basePath)-1] == '/') {
 		// panic: contract was violated, server requires this initialization
 		panic(fmt.Sprintf("%s, got %q", docMsg, basePath))
 	}

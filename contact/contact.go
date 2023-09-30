@@ -22,7 +22,7 @@ func (me Id) String() string {
 	return string(me)
 }
 
-func (me Id) Has(c Contact) bool {
+func (me Id) HasSameId(c Contact) bool {
 	return me == c.Id
 }
 

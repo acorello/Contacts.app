@@ -21,7 +21,7 @@ func NewPopulatedInMemoryContactRepository() InMemoryRepository {
 }
 
 func (me InMemoryRepository) FindById(id Id) (c Contact, found bool) {
-	idx := slices.IndexFunc(me.contacts, id.Has)
+	idx := slices.IndexFunc(me.contacts, id.HasSameId)
 	if idx >= 0 {
 		return me.contacts[idx], true
 	} else {
@@ -30,18 +30,15 @@ func (me InMemoryRepository) FindById(id Id) (c Contact, found bool) {
 }
 
 func (me InMemoryRepository) Delete(id Id) {
-	me.contacts = slices.DeleteFunc(me.contacts, id.Has)
+	me.contacts = slices.DeleteFunc(me.contacts, id.HasSameId)
 }
 
-func (me InMemoryRepository) FindAll() (result []Contact) {
-	for _, c := range me.contacts {
-		result = append(result, c)
-	}
-	return
+func (me InMemoryRepository) FindAll() []Contact {
+	return slices.Clone(me.contacts)
 }
 
 func (me InMemoryRepository) Store(c Contact) error {
-	existingIdx := slices.IndexFunc(me.contacts, c.Id.Has)
+	existingIdx := slices.IndexFunc(me.contacts, c.Id.HasSameId)
 	if existingIdx >= 0 {
 		me.contacts[existingIdx] = c
 	} else {
