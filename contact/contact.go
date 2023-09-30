@@ -13,7 +13,6 @@ func NewId() Id {
 }
 
 func ParseId(s string) (Id, error) {
-	s = strings.TrimSpace(s)
 	u, err := uuid.Parse(s)
 	return Id(u.String()), err
 }

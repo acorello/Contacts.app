@@ -1,6 +1,9 @@
 package contact
 
-import "slices"
+import (
+	"log"
+	"slices"
+)
 
 type InMemoryRepository struct {
 	contacts []Contact
@@ -10,7 +13,7 @@ func NewPopulatedInMemoryContactRepository() InMemoryRepository {
 	return InMemoryRepository{
 		contacts: []Contact{
 			{
-				Id:        "0",
+				Id:        NewId(),
 				FirstName: "Joe",
 				LastName:  "Bloggs",
 				Phone:     "+44(0)751123456",
@@ -29,7 +32,7 @@ func (me InMemoryRepository) FindById(id Id) (c Contact, found bool) {
 	}
 }
 
-func (me InMemoryRepository) Delete(id Id) {
+func (me *InMemoryRepository) Delete(id Id) {
 	me.contacts = slices.DeleteFunc(me.contacts, id.HasSameId)
 }
 
@@ -37,7 +40,8 @@ func (me InMemoryRepository) FindAll() []Contact {
 	return slices.Clone(me.contacts)
 }
 
-func (me InMemoryRepository) Store(c Contact) error {
+func (me *InMemoryRepository) Store(c Contact) error {
+	log.Printf("Storing %#v", c)
 	existingIdx := slices.IndexFunc(me.contacts, c.Id.HasSameId)
 	if existingIdx >= 0 {
 		me.contacts[existingIdx] = c

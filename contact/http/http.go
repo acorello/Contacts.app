@@ -126,13 +126,10 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 	var renderingError error
 	contactForm, err := parseContactForm(r)
 	if err != nil {
-		log.Printf("%#v", err)
+		log.Printf("Error parsing contacto form: %+v", err)
 		contactForm := template.NewFormWith(contactForm)
 		renderingError = template.WriteContactFormHTML(w, contactForm)
 	} else {
-		if contactForm.Id == "" {
-			contactForm.Id = contact.NewId()
-		}
 		h.contactRepository.Store(contactForm)
 		log.Printf("Stored: %#v", contactForm)
 		http.Redirect(w, r, h.ListPath, http.StatusFound)
@@ -199,15 +196,19 @@ func parseContactForm(r *http.Request) (c contact.Contact, err error) {
 		}
 		*store = val
 	}
-	id, err := contact.ParseId(form.Trim("Id"))
-	if err != nil {
+	if _id := form.Trim("Id"); _id == "" {
+		c.Id = contact.NewId()
+		// TODO: prhaps I shall differentiate this case using PUT / POST
+		log.Printf("Got blank contact id assuming new contact, assigning new id %q", c.Id)
+	} else if id, err := contact.ParseId(_id); err != nil {
 		errors["Id"] = err
+	} else {
+		c.Id = id
 	}
-	c.Id = id
 	getAndCollect(form.Trim_NotBlank, "FirstName", &c.FirstName)
 	getAndCollect(form.Trim_NotBlank, "LastName", &c.LastName)
 	getAndCollect(form.Trim_NotBlank, "Email", &c.Email)
-	getAndCollect(form.Trim_NotBlank, "Phone", &c.Phone)
+	c.Phone = form.Trim("Phone")
 	if len(errors) > 0 {
 		return c, fmt.Errorf("%#v", errors)
 	} else {
