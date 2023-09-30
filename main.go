@@ -15,7 +15,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	const BASE_PATH = "/contact/"
-	contactHandler := http_contact.NewContactHandler(BASE_PATH, &repo)
+	contactHandler := http_contact.NewContactHandler(BASE_PATH, repo)
 
 	mux.HandleFunc(BASE_PATH, LoggingHandler(contactHandler))
 

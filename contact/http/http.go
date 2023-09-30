@@ -9,7 +9,6 @@ import (
 	"dev.acorello.it/go/contacts/contact"
 	"dev.acorello.it/go/contacts/contact/template"
 	_http "dev.acorello.it/go/contacts/http"
-	"github.com/google/uuid"
 )
 
 // I want to have a single handler for the /contact path and subpaths
@@ -83,8 +82,12 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
-	id := q.Get("Id")
-	id = strings.TrimSpace(id)
+	id, err := contact.ParseId(q.Get("Id"))
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to parse id %q: %v", q.Get("Id"), err)
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
 	contact, found := h.contactRepository.FindById(id)
 	hasIdArg := q.Has("Id")
 	if hasIdArg && !found {
@@ -105,9 +108,15 @@ func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		log.Print(msg)
 		return
 	}
-	id := form.Trim("Id") //TODO: rename additional readers with Get prefix
+	_id := form.Trim("Id")
+	id, err := contact.ParseId(_id)
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to parse id %q: %v", _id, err)
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
 	h.contactRepository.Delete(id)
-	http.Redirect(w, r, "/contacts", http.StatusSeeOther)
+	http.Redirect(w, r, h.listPath, http.StatusSeeOther)
 	if renderingError != nil {
 		log.Printf("error rendering template: %v", renderingError)
 	}
@@ -122,11 +131,11 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 		renderingError = template.WriteContactFormHTML(w, contactForm)
 	} else {
 		if contactForm.Id == "" {
-			contactForm.Id = uuid.NewString()
+			contactForm.Id = contact.NewId()
 		}
 		h.contactRepository.Store(contactForm)
 		log.Printf("Stored: %#v", contactForm)
-		http.Redirect(w, r, "/contacts", http.StatusFound)
+		http.Redirect(w, r, h.listPath, http.StatusFound)
 	}
 	if renderingError != nil {
 		log.Printf("error rendering template: %v", renderingError)
@@ -141,8 +150,13 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 		contactForm := template.NewForm()
 		renderingError = template.WriteContactFormHTML(w, contactForm)
 	} else {
-		id := q.Get("Id")
-		id = strings.TrimSpace(id)
+		_id := q.Get("Id")
+		id, err := contact.ParseId(_id)
+		if err != nil {
+			errMsg := fmt.Sprintf("Failed to parse id %q: %v", _id, err)
+			http.Error(w, errMsg, http.StatusBadRequest)
+			return
+		}
 		c, found := h.contactRepository.FindById(id)
 		if !found {
 			w.WriteHeader(http.StatusNotFound)
@@ -185,7 +199,11 @@ func parseContactForm(r *http.Request) (c contact.Contact, err error) {
 		}
 		*store = val
 	}
-	c.Id = form.Trim("Id")
+	id, err := contact.ParseId(form.Trim("Id"))
+	if err != nil {
+		errors["Id"] = err
+	}
+	c.Id = id
 	getAndCollect(form.Trim_NotBlank, "FirstName", &c.FirstName)
 	getAndCollect(form.Trim_NotBlank, "LastName", &c.LastName)
 	getAndCollect(form.Trim_NotBlank, "Email", &c.Email)

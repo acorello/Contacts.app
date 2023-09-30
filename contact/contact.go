@@ -2,10 +2,33 @@ package contact
 
 import (
 	"strings"
+
+	"github.com/google/uuid"
 )
 
+type Id string
+
+func NewId() Id {
+	return Id(uuid.NewString())
+}
+
+func ParseId(s string) (Id, error) {
+	s = strings.TrimSpace(s)
+	u, err := uuid.Parse(s)
+	return Id(u.String()), err
+}
+
+func (me Id) String() string {
+	return string(me)
+}
+
+func (me Id) Has(c Contact) bool {
+	return me == c.Id
+}
+
 type Contact struct {
-	Id, FirstName, LastName, Phone, Email string
+	Id
+	FirstName, LastName, Phone, Email string
 }
 
 func (my Contact) AnyFieldContains(s string) bool {
@@ -14,8 +37,8 @@ func (my Contact) AnyFieldContains(s string) bool {
 }
 
 type Repository interface {
-	FindById(id string) (c Contact, found bool)
-	Delete(id string)
+	FindById(id Id) (c Contact, found bool)
+	Delete(id Id)
 	FindAll() (result []Contact)
 	Store(c Contact) error
 	FindBySearchTerm(term string) (result []Contact)

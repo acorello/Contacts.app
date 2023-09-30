@@ -31,7 +31,7 @@ func TestContactHTML(t *testing.T) {
 	}
 
 	for name, value := range map[string]string{
-		"Id":        aContact.Id,
+		"Id":        aContact.Id.String(),
 		"FirstName": aContact.FirstName,
 		"LastName":  aContact.LastName,
 		"Phone":     aContact.Phone,
@@ -60,7 +60,7 @@ func TestContactsHTML(t *testing.T) {
 
 	for name, value := range map[string]string{
 		"SearchTerm": s.SearchTerm,
-		"Id":         aContact.Id,
+		"Id":         aContact.Id.String(),
 		"FirstName":  aContact.FirstName,
 		"LastName":   aContact.LastName,
 		"Phone":      aContact.Phone,
@@ -92,7 +92,7 @@ func TestContactFormHTML(t *testing.T) {
 
 	for name, value := range map[string]string{
 		"EmailErrorMessage": f.Errors["Email"].Error(),
-		"Id":                aContact.Id,
+		"Id":                aContact.Id.String(),
 		"FirstName":         aContact.FirstName,
 		"LastName":          aContact.LastName,
 		"Phone":             aContact.Phone,
