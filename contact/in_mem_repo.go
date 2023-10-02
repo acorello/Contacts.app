@@ -13,7 +13,7 @@ func NewPopulatedInMemoryContactRepository() InMemoryRepository {
 	return InMemoryRepository{
 		contacts: []Contact{
 			{
-				Id:        NewId(),
+				Id:        MustParseId("00000000-0000-0000-0000-000000000001"),
 				FirstName: "Joe",
 				LastName:  "Bloggs",
 				Phone:     "+44(0)751123456",

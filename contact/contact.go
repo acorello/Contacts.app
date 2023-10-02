@@ -1,6 +1,7 @@
 package contact
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
@@ -15,6 +16,14 @@ func NewId() Id {
 func ParseId(s string) (Id, error) {
 	u, err := uuid.Parse(s)
 	return Id(u.String()), err
+}
+
+func MustParseId(s string) Id {
+	u, err := uuid.Parse(s)
+	if err != nil {
+		panic(fmt.Sprintf("MustParseId failed for %q: %v", s, err))
+	}
+	return Id(u.String())
 }
 
 func (me Id) String() string {
