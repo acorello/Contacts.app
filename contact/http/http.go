@@ -7,10 +7,10 @@ import (
 	"net/url"
 	"strings"
 
-	std_template "html/template"
+	"html/template"
 
 	"dev.acorello.it/go/contacts/contact"
-	"dev.acorello.it/go/contacts/contact/template"
+	"dev.acorello.it/go/contacts/contact/http/ht"
 
 	_http "dev.acorello.it/go/contacts/http"
 )
@@ -76,9 +76,9 @@ func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
 		// should I move error handling within the template package? maybe better now to just panic?
-		var renderingError = template.WriteContactHTML(w, contact,
-			template.ContactPageURLs{
-				ContactList: std_template.URL(h.List),
+		var renderingError = ht.WriteContact(w, contact,
+			ht.ContactPageURLs{
+				ContactList: template.URL(h.List),
 				ContactForm: h.ContactFormURL(contact),
 			},
 		)
@@ -88,7 +88,7 @@ func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (my validResourcePaths) ContactFormURL(c contact.Contact) std_template.URL {
+func (my validResourcePaths) ContactFormURL(c contact.Contact) template.URL {
 	res, err := url.Parse(my.Form)
 	if err != nil {
 		panic(err)
@@ -96,7 +96,7 @@ func (my validResourcePaths) ContactFormURL(c contact.Contact) std_template.URL 
 	q := url.Values{}
 	q.Add("Id", c.Id.String())
 	res.RawQuery = q.Encode()
-	return std_template.URL(res.String())
+	return template.URL(res.String())
 }
 
 func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -123,8 +123,8 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 	contactForm, err := parseContactForm(r)
 	if err != nil {
 		log.Printf("Error parsing contacto form: %+v", err)
-		contactForm := template.NewFormWith(contactForm)
-		renderingError = template.WriteContactFormHTML(w, contactForm)
+		contactForm := ht.NewFormWith(contactForm)
+		renderingError = ht.WriteContactForm(w, contactForm)
 	} else {
 		h.contactRepository.Store(contactForm)
 		log.Printf("Stored: %#v", contactForm)
@@ -140,8 +140,8 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 	var renderingError error
 	if editContact := q.Has("Id"); !editContact {
 		// blank form to create a new contact
-		contactForm := template.NewForm()
-		renderingError = template.WriteContactFormHTML(w, contactForm)
+		contactForm := ht.NewForm()
+		renderingError = ht.WriteContactForm(w, contactForm)
 	} else {
 		_id := q.Get("Id")
 		id, err := contact.ParseId(_id)
@@ -154,7 +154,7 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 		if !found {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			renderingError = template.WriteContactFormHTML(w, template.NewFormWith(c))
+			renderingError = ht.WriteContactForm(w, ht.NewFormWith(c))
 		}
 	}
 	if renderingError != nil {
@@ -174,7 +174,7 @@ func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Listing contacts containing %q", searchTerm)
 		contacts = h.contactRepository.FindBySearchTerm(searchTerm)
 	}
-	if err := template.WriteContactsHTML(w, template.SearchPage{
+	if err := ht.WriteContacts(w, ht.SearchPage{
 		SearchTerm: searchTerm,
 		Contacts:   contacts,
 	}); err != nil {

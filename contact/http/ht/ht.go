@@ -1,4 +1,4 @@
-package template
+package ht
 
 import (
 	"embed"
@@ -37,7 +37,7 @@ type ContactPageURLs struct {
 	ContactList, ContactForm template.URL
 }
 
-func WriteContactHTML(w io.Writer, c contact.Contact, u ContactPageURLs) error {
+func WriteContact(w io.Writer, c contact.Contact, u ContactPageURLs) error {
 	return contactTemplate.Execute(w, map[string]any{
 		"Contact": c,
 		"URLs":    u,
@@ -62,7 +62,7 @@ func NewForm() ContactForm {
 	}
 }
 
-func WriteContactFormHTML(w io.Writer, c ContactForm) error {
+func WriteContactForm(w io.Writer, c ContactForm) error {
 	return contactFormTemplate.Execute(w, c)
 }
 
@@ -71,6 +71,6 @@ type SearchPage struct {
 	Contacts   []contact.Contact
 }
 
-func WriteContactsHTML(w io.Writer, s SearchPage) error {
+func WriteContacts(w io.Writer, s SearchPage) error {
 	return contactsTemplate.Execute(w, s)
 }
