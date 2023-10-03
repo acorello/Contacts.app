@@ -21,7 +21,7 @@ var contactTemplate,
 
 func init() {
 	contactTemplate = makeTemplate(myTemplates, "contact.html")
-	contactsTemplate = makeTemplate(myTemplates, "contacts.html")
+	contactsTemplate = makeTemplate(myTemplates, "contact_list.html")
 	contactFormTemplate = makeTemplate(myTemplates, "contact_form.html")
 }
 
