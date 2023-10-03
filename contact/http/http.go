@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"html/template"
@@ -86,17 +85,6 @@ func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 			log.Printf("error rendering template: %v", renderingError)
 		}
 	}
-}
-
-func (my validResourcePaths) ContactFormURL(c contact.Contact) template.URL {
-	res, err := url.Parse(my.Form)
-	if err != nil {
-		panic(err)
-	}
-	q := url.Values{}
-	q.Add("Id", c.Id.String())
-	res.RawQuery = q.Encode()
-	return template.URL(res.String())
 }
 
 func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
