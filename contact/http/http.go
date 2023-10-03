@@ -4,52 +4,32 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
+
+	std_template "html/template"
 
 	"dev.acorello.it/go/contacts/contact"
 	"dev.acorello.it/go/contacts/contact/template"
+
 	_http "dev.acorello.it/go/contacts/http"
 )
 
-// I want to have a single handler for the /contact path and subpaths
-// for instance /contact/form
-// Why do I want a /contact/form?
-// Why not using a POST to /contact
-// POST /contact may work semantically, but when I want to create a new contact, I have to GET an empty form
-// GET /contact?Id=<ID> is already taken by the
-// GET /contact?new could work if I dispatch on the params… however params are a map of value, they allow ambiguous requests like /contact?new&Id=<ID>
-// GET /contact/form instead is unique.
-// But in order for this to work we have to make this module path-aware… which actually it's OK, because this module is responsible of handling the HTTP requests for a resource, so has to know about parameter names and format, for example.
-//
-
 type contactHTTPHandler struct {
-	basePath string
-	formPath string
-	ListPath string
-
+	validResourcePaths
 	contactRepository contact.Repository
 }
 
-// basePath should be absolute, end with '/', and have at least one element
-func NewContactHandler(basePath string, r contact.Repository) contactHTTPHandler {
-	const docMsg = "path should be absolute, end with '/', and have at least one element"
-	if !(len(basePath) > 2 && basePath[0] == '/' && basePath[len(basePath)-1] == '/') {
-		// panic: contract was violated, server requires this initialization
-		panic(fmt.Sprintf("%s, got %q", docMsg, basePath))
-	}
+func NewContactHandler(paths validResourcePaths, repo contact.Repository) contactHTTPHandler {
 	return contactHTTPHandler{
-		basePath: basePath,
-		formPath: basePath + "form",
-		ListPath: basePath + "list",
-
-		contactRepository: r,
+		validResourcePaths: paths,
+		contactRepository:  repo,
 	}
 }
 
-// expects to be bound to BASE_PATH, a folder. Will dispatch on any sub-path.
 func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch p := r.URL.Path; p {
-	case h.basePath:
+	case h.Root:
 		switch r.Method {
 		case http.MethodGet:
 			h.Get(w, r)
@@ -58,7 +38,7 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.formPath:
+	case h.Form:
 		switch r.Method {
 		case http.MethodGet:
 			h.GetForm(w, r)
@@ -67,7 +47,7 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.ListPath:
+	case h.List:
 		switch r.Method {
 		case http.MethodGet:
 			h.GetList(w, r)
@@ -95,13 +75,32 @@ func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	} else if !hasIdArg {
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
-		template.WriteContactHTML(w, contact)
+		// should I move error handling within the template package? maybe better now to just panic?
+		var renderingError = template.WriteContactHTML(w, contact,
+			template.ContactPageURLs{
+				ContactList: std_template.URL(h.List),
+				ContactForm: h.ContactFormURL(contact),
+			},
+		)
+		if renderingError != nil {
+			log.Printf("error rendering template: %v", renderingError)
+		}
 	}
+}
+
+func (my validResourcePaths) ContactFormURL(c contact.Contact) std_template.URL {
+	res, err := url.Parse(my.Form)
+	if err != nil {
+		panic(err)
+	}
+	q := url.Values{}
+	q.Add("Id", c.Id.String())
+	res.RawQuery = q.Encode()
+	return std_template.URL(res.String())
 }
 
 func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	form := _http.NewUrlValues(r)
-	var renderingError error
 	if !form.Has("Id") {
 		msg := fmt.Sprintf("Missing %q from submitted form: %#v", "Id", r.Form)
 		http.Error(w, msg, http.StatusBadRequest)
@@ -116,10 +115,7 @@ func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.contactRepository.Delete(id)
-	http.Redirect(w, r, h.ListPath, http.StatusSeeOther)
-	if renderingError != nil {
-		log.Printf("error rendering template: %v", renderingError)
-	}
+	http.Redirect(w, r, h.List, http.StatusSeeOther)
 }
 
 func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +128,7 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 	} else {
 		h.contactRepository.Store(contactForm)
 		log.Printf("Stored: %#v", contactForm)
-		http.Redirect(w, r, h.ListPath, http.StatusFound)
+		http.Redirect(w, r, h.List, http.StatusFound)
 	}
 	if renderingError != nil {
 		log.Printf("error rendering template: %v", renderingError)

@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	std_template "html/template"
+
 	"dev.acorello.it/go/contacts/contact"
 	"dev.acorello.it/go/contacts/contact/template"
 	"dev.acorello.it/go/contacts/templates"
@@ -12,7 +14,7 @@ import (
 )
 
 var aContact = contact.Contact{
-	Id:        "ID",
+	Id:        "CNT_1234",
 	FirstName: "FIRST_NAME",
 	LastName:  "LAST_NAME",
 	Phone:     "PHONE",
@@ -22,7 +24,11 @@ var aContact = contact.Contact{
 // Check HTML is syntactically valid and that it contains all properties of the template arguments
 func TestContactHTML(t *testing.T) {
 	var sb strings.Builder
-	if err := template.WriteContactHTML(&sb, aContact); err != nil {
+	urls := template.ContactPageURLs{
+		ContactForm: std_template.URL("/contact/form?Id=" + aContact.Id),
+		ContactList: "/contact/list",
+	}
+	if err := template.WriteContactHTML(&sb, aContact, urls); err != nil {
 		t.Fatal(err)
 	}
 	htmlDoc := sb.String()
@@ -36,6 +42,9 @@ func TestContactHTML(t *testing.T) {
 		"LastName":  aContact.LastName,
 		"Phone":     aContact.Phone,
 		"Email":     aContact.Email,
+
+		"ContactFormURL": string(urls.ContactForm),
+		"ContactListURL": string(urls.ContactList),
 	} {
 		if !strings.Contains(htmlDoc, value) {
 			t.Errorf("value %q of property %q not found in HTML", value, name)

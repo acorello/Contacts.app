@@ -13,17 +13,23 @@ var repo = contact.NewPopulatedInMemoryContactRepository()
 
 func main() {
 	mux := http.NewServeMux()
+	contactResourcePaths, err := http_contact.ResourcePaths{
+		Root: "/contact/",
+		Form: "/contact/form",
+		List: "/contact/list",
+	}.Validated()
+	if err != nil {
+		panic(err)
+	}
+	contactHandler := http_contact.NewContactHandler(contactResourcePaths, &repo)
 
-	const BASE_PATH = "/contact/"
-	contactHandler := http_contact.NewContactHandler(BASE_PATH, &repo)
-
-	mux.HandleFunc(BASE_PATH, LoggingHandler(contactHandler))
+	mux.HandleFunc(contactResourcePaths.Root, LoggingHandler(contactHandler))
 
 	mux.HandleFunc("/static/",
 		LoggingHandler(static.FileServer()))
 
 	mux.HandleFunc("/",
-		LoggingHandler(http.RedirectHandler(contactHandler.ListPath, http.StatusFound)))
+		LoggingHandler(http.RedirectHandler(contactResourcePaths.List, http.StatusFound)))
 
 	address := "localhost:8080"
 	log.Printf("Starting server at %q", address)

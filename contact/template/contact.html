@@ -8,14 +8,16 @@
     <main hx-boost="true">
         <h1>Contact</h1>
 
+        {{ with .Contact }}
         <h2>{{ .LastName }}, {{ .FirstName }}</h2>
         <div>
             <div>Phone: <span>{{ .Phone }}</span></div>
             <div>Email: <span>{{ .Email }}</span></div>
         </div>
+        {{ end }}
         <p>
-            <a href="/contact/form?id={{ .Id }}">Edit</a>
-            <a href="/contacts">Back</a>
+            <a href="{{ $.URLs.ContactForm }}">Edit</a>
+            <a href="{{ $.URLs.ContactList }}">Back</a>
         </p>
     </main>
     {{ end }}

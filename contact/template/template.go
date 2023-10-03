@@ -33,8 +33,15 @@ func makeTemplate(files fs.FS, templateFile string) *template.Template {
 	return t
 }
 
-func WriteContactHTML(w io.Writer, c contact.Contact) error {
-	return contactTemplate.Execute(w, c)
+type ContactPageURLs struct {
+	ContactList, ContactForm template.URL
+}
+
+func WriteContactHTML(w io.Writer, c contact.Contact, u ContactPageURLs) error {
+	return contactTemplate.Execute(w, map[string]any{
+		"Contact": c,
+		"URLs":    u,
+	})
 }
 
 type ContactForm struct {
