@@ -6,8 +6,9 @@
 <body>
     {{ define "main" }}
     <main>
-        <h2>Contact</h2>
-        <form action="/contact/form" method="post">
+        {{ with .ContactForm }}
+        <h2>Editing: {{ .LastName }}, {{ .FirstName }}</h2>
+        <form action="{{ $.URLs.ContactForm }}" method="post">
             <input type="hidden" name="Id" value="{{ .Id }}">
             <fieldset>
                 <legend>Contact Values</legend>
@@ -36,14 +37,16 @@
                 <button>Save</button>
             </fieldset>
         </form>
-        <form action="/contact/?Id={{ .Id }}" method="delete" hx-boost="true"
+        {{ end }}
+        {{ if $.URLs.DeleteContact }}
+        <form action="{{ $.URLs.DeleteContact }}" method="delete" hx-boost="true"
             hx-trigger="click, keyup[ctrlKey && key == 'd'] from:body">
             <input type="hidden" name="tag" value="taggd">
             <button>Delete</button>
         </form>
-
+        {{ end }}
         <p>
-            <a href="/contact/list" hx-boost="true">Back</a>
+            <a href="{{ $.URLs.ContactList }}" hx-boost="true">Back</a>
         </p>
     </main>
     {{ end }}

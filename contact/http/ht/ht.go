@@ -37,6 +37,10 @@ type ContactPageURLs struct {
 	ContactList, ContactForm template.URL
 }
 
+type ContactFormPageURLs struct {
+	DeleteContact, ContactList, ContactForm template.URL
+}
+
 func WriteContact(w io.Writer, c contact.Contact, u ContactPageURLs) error {
 	return contactTemplate.Execute(w, map[string]any{
 		"Contact": c,
@@ -62,8 +66,11 @@ func NewForm() ContactForm {
 	}
 }
 
-func WriteContactForm(w io.Writer, c ContactForm) error {
-	return contactFormTemplate.Execute(w, c)
+func WriteContactForm(w io.Writer, c ContactForm, u ContactFormPageURLs) error {
+	return contactFormTemplate.Execute(w, map[string]any{
+		"ContactForm": c,
+		"URLs":        u,
+	})
 }
 
 type SearchPage struct {

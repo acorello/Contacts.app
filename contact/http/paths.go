@@ -10,6 +10,10 @@ import (
 	"dev.acorello.it/go/contacts/contact"
 )
 
+const (
+	CustomerId = "Id"
+)
+
 type ResourcePaths struct {
 	Root, Form, List string
 }
@@ -24,15 +28,24 @@ func (my ResourcePaths) Validated() (v validResourcePaths, err error) {
 	return validResourcePaths(my), nil
 }
 
-func (my validResourcePaths) ContactFormURL(c contact.Contact) template.URL {
-	res, err := url.Parse(my.Form)
-	if err != nil {
-		panic(err)
-	}
+func (my validResourcePaths) contactFormURL(c contact.Contact) template.URL {
 	q := url.Values{}
 	q.Add("Id", c.Id.String())
-	res.RawQuery = q.Encode()
-	return template.URL(res.String())
+	u := url.URL{
+		Path:     my.Form,
+		RawQuery: q.Encode(),
+	}
+	return template.URL(u.String())
+}
+
+func (my validResourcePaths) contactURL(c contact.Contact) template.URL {
+	q := url.Values{}
+	q.Add("Id", c.Id.String())
+	u := url.URL{
+		Path:     my.Root,
+		RawQuery: q.Encode(),
+	}
+	return template.URL(u.String())
 }
 
 func hasDuplicates[T cmp.Ordered](s ...T) bool {

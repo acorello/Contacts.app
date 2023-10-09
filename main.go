@@ -13,28 +13,26 @@ var repo = contact.NewPopulatedInMemoryContactRepository()
 
 func main() {
 	mux := http.NewServeMux()
-	contactResourcePaths, err := http_contact.ResourcePaths{
+	mux.HandleFunc("/static/", LoggingHandler(static.FileServer()))
+
+	contactResourcePaths := http_contact.ResourcePaths{
 		Root: "/contact/",
 		Form: "/contact/form",
 		List: "/contact/list",
-	}.Validated()
-	if err != nil {
-		panic(err)
 	}
-	contactHandler := http_contact.NewContactHandler(contactResourcePaths, &repo)
-
-	mux.HandleFunc(contactResourcePaths.Root, LoggingHandler(contactHandler))
-
-	mux.HandleFunc("/static/",
-		LoggingHandler(static.FileServer()))
-
-	mux.HandleFunc("/",
-		LoggingHandler(http.RedirectHandler(contactResourcePaths.List, http.StatusFound)))
+	if validatedPaths, err := contactResourcePaths.Validated(); err != nil {
+		panic(err)
+	} else {
+		contactHandler := http_contact.NewContactHandler(validatedPaths, &repo)
+		mux.HandleFunc(validatedPaths.Root, LoggingHandler(contactHandler))
+		homeRedirect := http.RedirectHandler(validatedPaths.List, http.StatusFound)
+		mux.HandleFunc("/", LoggingHandler(homeRedirect))
+	}
 
 	address := "localhost:8080"
 	log.Printf("Starting server at %q", address)
-	if err := http.ListenAndServe(address, mux); err != nil {
-		log.Fatal(err)
+	if serverErr := http.ListenAndServe(address, mux); serverErr != nil {
+		log.Fatal(serverErr)
 	}
 }
 
