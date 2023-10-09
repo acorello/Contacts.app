@@ -9,6 +9,7 @@
         {{ with .ContactForm }}
         <h2>Editing: {{ .LastName }}, {{ .FirstName }}</h2>
         <form action="{{ $.URLs.ContactForm }}" method="post">
+            <!-- TODO embed Id in URL and remove hidden input -->
             <input type="hidden" name="Id" value="{{ .Id }}">
             <fieldset>
                 <legend>Contact Values</legend>
