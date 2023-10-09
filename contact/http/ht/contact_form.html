@@ -39,14 +39,14 @@
         </form>
         {{ end }}
         {{ if $.URLs.DeleteContact }}
-        <form action="{{ $.URLs.DeleteContact }}" method="delete" hx-boost="true"
+        <form action="{{ $.URLs.DeleteContact }}" method="delete"
             hx-trigger="click, keyup[ctrlKey && key == 'd'] from:body">
             <input type="hidden" name="tag" value="taggd">
             <button>Delete</button>
         </form>
         {{ end }}
         <p>
-            <a href="{{ $.URLs.ContactList }}" hx-boost="true">Back</a>
+            <a href="{{ $.URLs.ContactList }}">Back</a>
         </p>
     </main>
     {{ end }}
