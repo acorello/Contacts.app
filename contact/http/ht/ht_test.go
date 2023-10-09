@@ -59,7 +59,7 @@ func TestContactsHTML(t *testing.T) {
 		SearchTerm: "SEARCH_TERM",
 		Contacts:   []contact.Contact{aContact},
 	}
-	if err := ht.WriteContacts(&sb, s); err != nil {
+	if err := ht.WriteContactList(&sb, s); err != nil {
 		t.Fatal(err)
 	}
 	htmlDoc := sb.String()

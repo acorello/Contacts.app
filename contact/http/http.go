@@ -171,7 +171,7 @@ func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Listing contacts containing %q", searchTerm)
 		contacts = h.contactRepository.FindBySearchTerm(searchTerm)
 	}
-	if err := ht.WriteContacts(w, ht.SearchPage{
+	if err := ht.WriteContactList(w, ht.SearchPage{
 		SearchTerm: searchTerm,
 		Contacts:   contacts,
 	}); err != nil {

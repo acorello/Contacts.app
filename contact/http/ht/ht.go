@@ -17,11 +17,11 @@ var myTemplates embed.FS
 
 var contactTemplate,
 	contactFormTemplate,
-	contactsTemplate *template.Template
+	contactListTemplate *template.Template
 
 func init() {
 	contactTemplate = makeTemplate(myTemplates, "contact.html")
-	contactsTemplate = makeTemplate(myTemplates, "contact_list.html")
+	contactListTemplate = makeTemplate(myTemplates, "contact_list.html")
 	contactFormTemplate = makeTemplate(myTemplates, "contact_form.html")
 }
 
@@ -78,6 +78,6 @@ type SearchPage struct {
 	Contacts   []contact.Contact
 }
 
-func WriteContacts(w io.Writer, s SearchPage) error {
-	return contactsTemplate.Execute(w, s)
+func WriteContactList(w io.Writer, s SearchPage) error {
+	return contactListTemplate.Execute(w, s)
 }
