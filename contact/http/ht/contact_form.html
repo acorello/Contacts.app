@@ -36,14 +36,14 @@
                 <button>Save</button>
             </fieldset>
         </form>
-        <form action="/contact?Id={{ .Id }}" method="delete" hx-boost="true"
+        <form action="/contact/?Id={{ .Id }}" method="delete" hx-boost="true"
             hx-trigger="click, keyup[ctrlKey && key == 'd'] from:body">
             <input type="hidden" name="tag" value="taggd">
             <button>Delete</button>
         </form>
 
         <p>
-            <a href="/contacts" hx-boost="true">Back</a>
+            <a href="/contact/list" hx-boost="true">Back</a>
         </p>
     </main>
     {{ end }}
