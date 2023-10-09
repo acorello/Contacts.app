@@ -38,10 +38,11 @@
                 <button>Save</button>
             </fieldset>
         </form>
-        {{ end }}
         {{ if $.URLs.DeleteContact }}
         <button hx-delete="{{ $.URLs.DeleteContact }}" hx-target="body" hx-push-url="true"
+            hx-confirm="Do you want to delete '{{ .LastName }}, {{ .FirstName }}'?"
             hx-trigger="click, keyup[ctrlKey && key == 'd'] from:body">Delete</button>
+        {{ end }}
         {{ end }}
         <p>
             <a href="{{ $.URLs.ContactList }}">Back</a>
