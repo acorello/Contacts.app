@@ -86,7 +86,7 @@ func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// should I move error handling within the template package? maybe better now to just panic?
 		urls := ht.ContactPageURLs{
 			ContactList: template.URL(h.List),
-			ContactForm: h.contactFormURL(contact),
+			ContactForm: h.contactResourceURL(contact, h.Form),
 		}
 		if err := ht.WriteContact(w, contact, urls); err != nil {
 			log.Printf("error rendering template: %v", err)
@@ -121,8 +121,8 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 		contactForm := ht.NewFormWith(contact)
 		contactForm.Errors = errors
 		renderingError = ht.WriteContactForm(w, contactForm, ht.ContactFormPageURLs{
-			ContactForm:       h.contactFormURL(contact),
-			PatchContactEmail: h.patchContactEmailURL(contact),
+			ContactForm:       h.contactResourceURL(contact, h.Form),
+			PatchContactEmail: h.contactResourceURL(contact, h.Email),
 		})
 	} else {
 		h.contactRepository.Store(contact)
@@ -143,7 +143,7 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 		urls := ht.ContactFormPageURLs{
 			ContactForm:       template.URL(h.Form),
 			ContactList:       template.URL(h.List),
-			PatchContactEmail: h.patchContactEmailURL(contactForm.Contact),
+			PatchContactEmail: h.contactResourceURL(contactForm.Contact, h.Email),
 		}
 		renderingError = ht.WriteContactForm(w, contactForm, urls)
 	} else {
@@ -160,9 +160,9 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 		} else {
 			urls := ht.ContactFormPageURLs{
 				ContactList:       template.URL(h.List),
-				ContactForm:       h.contactFormURL(contact),
-				DeleteContact:     h.contactURL(contact),
-				PatchContactEmail: h.patchContactEmailURL(contact),
+				ContactForm:       h.contactResourceURL(contact, h.Form),
+				DeleteContact:     h.contactResourceURL(contact, h.Root),
+				PatchContactEmail: h.contactResourceURL(contact, h.Email),
 			}
 			renderingError = ht.WriteContactForm(w, ht.NewFormWith(contact), urls)
 		}

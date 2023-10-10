@@ -28,31 +28,11 @@ func (my ResourcePaths) Validated() (v validResourcePaths, err error) {
 	return validResourcePaths(my), nil
 }
 
-func (my validResourcePaths) contactFormURL(c contact.Contact) template.URL {
+func (my validResourcePaths) contactResourceURL(c contact.Contact, path string) template.URL {
 	q := url.Values{}
 	q.Add("Id", c.Id.String())
 	u := url.URL{
-		Path:     my.Form,
-		RawQuery: q.Encode(),
-	}
-	return template.URL(u.String())
-}
-
-func (my validResourcePaths) patchContactEmailURL(c contact.Contact) template.URL {
-	q := url.Values{}
-	q.Add("Id", c.Id.String())
-	u := url.URL{
-		Path:     my.Email,
-		RawQuery: q.Encode(),
-	}
-	return template.URL(u.String())
-}
-
-func (my validResourcePaths) contactURL(c contact.Contact) template.URL {
-	q := url.Values{}
-	q.Add("Id", c.Id.String())
-	u := url.URL{
-		Path:     my.Root,
+		Path:     path,
 		RawQuery: q.Encode(),
 	}
 	return template.URL(u.String())
