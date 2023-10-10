@@ -39,6 +39,14 @@
                     </td>
                 </tr>
                 {{ end }}
+                {{ if $.URLs.NextPage }}
+                <tr>
+                    <td colspan="5" style="text-align: center;">
+                        <button hx-target="closest tr" hx-get="{{ $.URLs.NextPage }}" hx-select="tbody > tr"
+                            hx-swap="outerHTML">Load More</button>
+                    </td>
+                </tr>
+                {{ end }}
             </tbody>
         </table>
         {{ end }}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -22,6 +23,19 @@ func (my UrlValues) Trim(name string) string {
 	v := my.Get(name)
 	v = strings.TrimSpace(v)
 	return v
+}
+
+func (my UrlValues) IntOrPanic(name string, defaultIfBlank int) int {
+	v := my.Get(name)
+	v = strings.TrimSpace(v)
+	if v == "" {
+		return defaultIfBlank
+	}
+	if i, err := strconv.Atoi(v); err != nil {
+		panic(fmt.Errorf("failed to parse %q: %v", name, err))
+	} else {
+		return i
+	}
 }
 
 func (my UrlValues) Trim_NotBlank(name string) (string, error) {

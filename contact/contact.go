@@ -44,11 +44,30 @@ func (my Contact) AnyFieldContains(s string) bool {
 	return p(my.FirstName, s) || p(my.LastName, s) || p(my.Phone, s) || p(my.Email, s)
 }
 
+type Page struct {
+	Offset, Size int
+}
+
+func (me Page) Next() Page {
+	return Page{
+		Offset: me.Offset + 1,
+		Size:   me.Size,
+	}
+}
+
+func (me Page) StartOffset() int {
+	return me.Offset * me.Size
+}
+
+func (me Page) EndOffset() int {
+	return me.StartOffset() + me.Size
+}
+
 type Repository interface {
 	FindById(id Id) (c Contact, found bool)
 	Delete(id Id)
-	FindAll() (result []Contact)
+	FindAll(page Page) (result []Contact, more bool)
 	Store(c Contact) error
-	FindBySearchTerm(term string) (result []Contact)
+	FindBySearchTerm(term string, page Page) (result []Contact, more bool)
 	FindIdByEmail(email string) (res Id, found bool)
 }

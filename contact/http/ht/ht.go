@@ -76,6 +76,11 @@ func WriteContactForm(w io.Writer, c ContactForm, u ContactFormPageURLs) error {
 type SearchPage struct {
 	SearchTerm string
 	Contacts   []contact.Contact
+	URLs       SearchPageURLs
+}
+
+type SearchPageURLs struct {
+	NextPage template.URL
 }
 
 func WriteContactList(w io.Writer, s SearchPage) error {

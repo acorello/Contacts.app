@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"regexp"
-	"strings"
 
 	"html/template"
 
@@ -188,21 +187,37 @@ func (h contactHTTPHandler) PatchEmail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	searchTerm := q.Get("SearchTerm")
-	searchTerm = strings.TrimSpace(searchTerm)
+	q := _http.NewUrlValues(r)
+	searchTerm := q.Trim("SearchTerm")
+	page := contact.Page{
+		Offset: q.IntOrPanic("pageOffset", 0),
+		Size:   q.IntOrPanic("pageSize", 0),
+	}
+	page.Offset = max(page.Offset, 0)
+	page.Size = max(page.Size, 10)
+	page.Size = min(page.Size, 50)
+
 	var contacts []contact.Contact
+	var more bool
 	if searchTerm == "" {
 		log.Printf("Listing all contacts")
-		contacts = h.contactRepository.FindAll()
+		contacts, more = h.contactRepository.FindAll(page)
 	} else {
 		log.Printf("Listing contacts containing %q", searchTerm)
-		contacts = h.contactRepository.FindBySearchTerm(searchTerm)
+		contacts, more = h.contactRepository.FindBySearchTerm(searchTerm, page)
 	}
-	if err := ht.WriteContactList(w, ht.SearchPage{
+	var nextPageURL template.URL
+	if more {
+		nextPageURL = h.searchPageURL(page.Next(), searchTerm)
+	}
+	templateParams := ht.SearchPage{
 		SearchTerm: searchTerm,
 		Contacts:   contacts,
-	}); err != nil {
+		URLs: ht.SearchPageURLs{
+			NextPage: nextPageURL,
+		},
+	}
+	if err := ht.WriteContactList(w, templateParams); err != nil {
 		log.Printf("error rendering template: %v", err)
 	}
 }

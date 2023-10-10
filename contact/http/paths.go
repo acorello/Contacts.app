@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/url"
 	"slices"
+	"strconv"
 
 	"dev.acorello.it/go/contacts/contact"
 )
@@ -33,6 +34,20 @@ func (my validResourcePaths) contactResourceURL(c contact.Contact, path string) 
 	q.Add("Id", c.Id.String())
 	u := url.URL{
 		Path:     path,
+		RawQuery: q.Encode(),
+	}
+	return template.URL(u.String())
+}
+
+func (my validResourcePaths) searchPageURL(page contact.Page, searchTerm string) template.URL {
+	q := url.Values{}
+	if searchTerm != "" {
+		q.Add("SearchTerm", searchTerm)
+	}
+	q.Add("pageOffset", strconv.Itoa(page.Offset))
+	q.Add("pageSize", strconv.Itoa(page.Size))
+	u := url.URL{
+		Path:     my.List,
 		RawQuery: q.Encode(),
 	}
 	return template.URL(u.String())

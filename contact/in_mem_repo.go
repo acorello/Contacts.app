@@ -144,8 +144,16 @@ func (me *InMemoryRepository) Delete(id Id) {
 	me.contacts = slices.DeleteFunc(me.contacts, id.HasSameId)
 }
 
-func (me InMemoryRepository) FindAll() []Contact {
-	return slices.Clone(me.contacts)
+func (me InMemoryRepository) FindAll(page Page) (result []Contact, more bool) {
+	maxEnd := len(me.contacts)
+	if page.StartOffset() > maxEnd {
+		return nil, false
+	}
+	start := page.StartOffset()
+	pageEnd := page.EndOffset()
+	end := min(pageEnd, maxEnd)
+	result = slices.Clone(me.contacts[start:end])
+	return result, maxEnd > pageEnd
 }
 
 func (me *InMemoryRepository) Store(c Contact) error {
@@ -159,11 +167,25 @@ func (me *InMemoryRepository) Store(c Contact) error {
 	return nil
 }
 
-func (me InMemoryRepository) FindBySearchTerm(term string) (result []Contact) {
+func (me InMemoryRepository) FindBySearchTerm(term string, page Page) (result []Contact, more bool) {
+	// me.contacts.findBy(p).drop(page.StartOffset()).take(page.Size)
+	start := page.StartOffset()
+	foundCount := 0
+	size := page.Size + 1 // we try fetching one more to tell if there is anothe page
 	for _, c := range me.contacts {
+		if len(result) >= size {
+			break
+		}
 		if c.AnyFieldContains(term) {
-			result = append(result, c)
+			if foundCount >= start {
+				result = append(result, c)
+			}
+			foundCount += 1
 		}
 	}
-	return
+	if len(result) == size {
+		return result[:len(result)-1], true
+	} else {
+		return result, false
+	}
 }
