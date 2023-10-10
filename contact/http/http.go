@@ -125,6 +125,7 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 			PatchContactEmail: h.contactResourceURL(contact, h.Email),
 		})
 	} else {
+		// TODO: implement validation (eg. [e-mail]--N--1--[contactId] ) and error handling
 		h.contactRepository.Store(contact)
 		log.Printf("Stored: %#v", contact)
 		http.Redirect(w, r, h.List, http.StatusFound)
