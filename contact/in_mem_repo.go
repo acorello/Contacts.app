@@ -32,6 +32,16 @@ func (me InMemoryRepository) FindById(id Id) (c Contact, found bool) {
 	}
 }
 
+func (me InMemoryRepository) FindIdByEmail(email string) (res Id, found bool) {
+	for i := range me.contacts {
+		if me.contacts[i].Email == email {
+			return me.contacts[i].Id, true
+		}
+	}
+	var zeroId Id
+	return zeroId, false
+}
+
 func (me *InMemoryRepository) Delete(id Id) {
 	me.contacts = slices.DeleteFunc(me.contacts, id.HasSameId)
 }

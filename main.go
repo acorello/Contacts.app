@@ -16,10 +16,12 @@ func main() {
 	mux.HandleFunc("/static/", LoggingHandler(static.FileServer()))
 
 	contactResourcePaths := http_contact.ResourcePaths{
-		Root: "/contact/",
-		Form: "/contact/form",
-		List: "/contact/list",
+		Root:  "/contact/",
+		Form:  "/contact/form",
+		List:  "/contact/list",
+		Email: "/contact/email",
 	}
+
 	if validatedPaths, err := contactResourcePaths.Validated(); err != nil {
 		panic(err)
 	} else {

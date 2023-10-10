@@ -50,4 +50,5 @@ type Repository interface {
 	FindAll() (result []Contact)
 	Store(c Contact) error
 	FindBySearchTerm(term string) (result []Contact)
+	FindIdByEmail(email string) (res Id, found bool)
 }

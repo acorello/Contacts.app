@@ -15,7 +15,8 @@
                 <legend>Contact Values</legend>
                 <p>
                     <label for="Email">Email</label>
-                    <input name="Email" id="Email" type="email" placeholder="Email" value="{{ .Email }}">
+                    <input name="Email" id="Email" type="email" placeholder="Email" value="{{ .Email }}"
+                        hx-patch="{{ $.URLs.PatchContactEmail }}" hx-target="next .error">
                     <span class="error">{{ .Errors.Email }}</span>
                 </p>
                 <p>

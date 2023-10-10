@@ -15,14 +15,14 @@ const (
 )
 
 type ResourcePaths struct {
-	Root, Form, List string
+	Root, Form, List, Email string
 }
 
 type validResourcePaths ResourcePaths
 
 // paths should be distinct or this will panic
 func (my ResourcePaths) Validated() (v validResourcePaths, err error) {
-	if hasDuplicates(my.Root, my.Form, my.List) {
+	if hasDuplicates(my.Root, my.Form, my.List, my.Email) {
 		return v, fmt.Errorf("path elements must be unique. Got %+v", my)
 	}
 	return validResourcePaths(my), nil
@@ -33,6 +33,16 @@ func (my validResourcePaths) contactFormURL(c contact.Contact) template.URL {
 	q.Add("Id", c.Id.String())
 	u := url.URL{
 		Path:     my.Form,
+		RawQuery: q.Encode(),
+	}
+	return template.URL(u.String())
+}
+
+func (my validResourcePaths) patchContactEmailURL(c contact.Contact) template.URL {
+	q := url.Values{}
+	q.Add("Id", c.Id.String())
+	u := url.URL{
+		Path:     my.Email,
 		RawQuery: q.Encode(),
 	}
 	return template.URL(u.String())

@@ -38,7 +38,7 @@ type ContactPageURLs struct {
 }
 
 type ContactFormPageURLs struct {
-	DeleteContact, ContactList, ContactForm template.URL
+	PatchContactEmail, DeleteContact, ContactList, ContactForm template.URL
 }
 
 func WriteContact(w io.Writer, c contact.Contact, u ContactPageURLs) error {

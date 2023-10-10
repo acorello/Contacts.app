@@ -54,8 +54,16 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
+	case h.Email:
+		switch r.Method {
+		case http.MethodPatch:
+			h.PatchEmail(w, r)
+		default:
+			_http.RespondErrMethodNotImplemented(w, r)
+		}
 	default:
 		errorMsg := fmt.Sprintf("Path %q is not supported", p)
+		log.Println(errorMsg)
 		http.Error(w, errorMsg, http.StatusNotFound)
 	}
 }
@@ -113,7 +121,8 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 		contactForm := ht.NewFormWith(contact)
 		contactForm.Errors = errors
 		renderingError = ht.WriteContactForm(w, contactForm, ht.ContactFormPageURLs{
-			ContactForm: h.contactFormURL(contact),
+			ContactForm:       h.contactFormURL(contact),
+			PatchContactEmail: h.patchContactEmailURL(contact),
 		})
 	} else {
 		h.contactRepository.Store(contact)
@@ -132,8 +141,9 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 		// blank form to create a new contact
 		contactForm := ht.NewForm()
 		urls := ht.ContactFormPageURLs{
-			ContactForm: template.URL(h.Form),
-			ContactList: template.URL(h.List),
+			ContactForm:       template.URL(h.Form),
+			ContactList:       template.URL(h.List),
+			PatchContactEmail: h.patchContactEmailURL(contactForm.Contact),
 		}
 		renderingError = ht.WriteContactForm(w, contactForm, urls)
 	} else {
@@ -144,20 +154,35 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, errMsg, http.StatusBadRequest)
 			return
 		}
-		c, found := h.contactRepository.FindById(id)
+		contact, found := h.contactRepository.FindById(id)
 		if !found {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
 			urls := ht.ContactFormPageURLs{
-				ContactList:   template.URL(h.List),
-				ContactForm:   h.contactFormURL(c),
-				DeleteContact: h.contactURL(c),
+				ContactList:       template.URL(h.List),
+				ContactForm:       h.contactFormURL(contact),
+				DeleteContact:     h.contactURL(contact),
+				PatchContactEmail: h.patchContactEmailURL(contact),
 			}
-			renderingError = ht.WriteContactForm(w, ht.NewFormWith(c), urls)
+			renderingError = ht.WriteContactForm(w, ht.NewFormWith(contact), urls)
 		}
 	}
 	if renderingError != nil {
 		log.Printf("error rendering template: %v", renderingError)
+	}
+}
+
+func (h contactHTTPHandler) PatchEmail(w http.ResponseWriter, r *http.Request) {
+	q := _http.NewUrlValues(r)
+	contactId := contact.Id(q.Trim("Id"))
+	contactEmail := q.Trim("Email")
+	log.Printf("validating e-mail %q for contactId %q", contactEmail, contactId)
+	existingContactId, found := h.contactRepository.FindIdByEmail(contactEmail)
+	if found && existingContactId != contactId {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "email address already in use")
+	} else {
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
