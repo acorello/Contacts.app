@@ -93,7 +93,10 @@ func TestContactFormHTML(t *testing.T) {
 
 	urls := ht.ContactFormPageURLs{}
 	// TODO: check URLs presence
-	if err := ht.WriteContactForm(&sb, f, urls); err != nil {
+	if err := ht.WriteContactForm(&sb, ht.ContactFormPage{
+		ContactForm: f,
+		URLs:        urls,
+	}); err != nil {
 		t.Fatal(err)
 	}
 	htmlDoc := sb.String()

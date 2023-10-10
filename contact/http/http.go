@@ -119,9 +119,12 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing contact form: %+v", errors)
 		contactForm := ht.NewFormWith(contact)
 		contactForm.Errors = errors
-		renderingError = ht.WriteContactForm(w, contactForm, ht.ContactFormPageURLs{
-			ContactForm:       h.contactResourceURL(contact, h.Form),
-			PatchContactEmail: h.contactResourceURL(contact, h.Email),
+		renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
+			ContactForm: contactForm,
+			URLs: ht.ContactFormPageURLs{
+				ContactForm:       h.contactResourceURL(contact, h.Form),
+				PatchContactEmail: h.contactResourceURL(contact, h.Email),
+			},
 		})
 	} else {
 		// TODO: implement validation (eg. [e-mail]--N--1--[contactId] ) and error handling
@@ -145,7 +148,10 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 			ContactList:       template.URL(h.List),
 			PatchContactEmail: h.contactResourceURL(contactForm.Contact, h.Email),
 		}
-		renderingError = ht.WriteContactForm(w, contactForm, urls)
+		renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
+			ContactForm: contactForm,
+			URLs:        urls,
+		})
 	} else {
 		_id := q.Get(CustomerId)
 		id, err := contact.ParseId(_id)
@@ -164,7 +170,10 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 				DeleteContact:     h.contactResourceURL(contact, h.Root),
 				PatchContactEmail: h.contactResourceURL(contact, h.Email),
 			}
-			renderingError = ht.WriteContactForm(w, ht.NewFormWith(contact), urls)
+			renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
+				ContactForm: ht.NewFormWith(contact),
+				URLs:        urls,
+			})
 		}
 	}
 	if renderingError != nil {

@@ -66,11 +66,13 @@ func NewForm() ContactForm {
 	}
 }
 
-func WriteContactForm(w io.Writer, c ContactForm, u ContactFormPageURLs) error {
-	return contactFormTemplate.Execute(w, map[string]any{
-		"ContactForm": c,
-		"URLs":        u,
-	})
+type ContactFormPage struct {
+	ContactForm
+	URLs ContactFormPageURLs
+}
+
+func WriteContactForm(w io.Writer, c ContactFormPage) error {
+	return contactFormTemplate.Execute(w, c)
 }
 
 type SearchPage struct {
