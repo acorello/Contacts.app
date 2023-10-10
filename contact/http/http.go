@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"html/template"
@@ -106,10 +107,11 @@ func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 	var renderingError error
-	contact, err := parseContact(r)
-	if err != nil {
-		log.Printf("Error parsing contacto form: %+v", err)
+	contact, errors := parseContact(r)
+	if errors != nil && len(errors) > 0 {
+		log.Printf("Error parsing contact form: %+v", errors)
 		contactForm := ht.NewFormWith(contact)
+		contactForm.Errors = errors
 		renderingError = ht.WriteContactForm(w, contactForm, ht.ContactFormPageURLs{
 			ContactForm: h.contactFormURL(contact),
 		})
@@ -179,15 +181,25 @@ func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func parseContact(r *http.Request) (c contact.Contact, err error) {
+var nameRegEx = re{regexp.MustCompile(`^\w+(?:[- ']\w+)*$`)}
+
+func parseContact(r *http.Request) (c contact.Contact, err map[string]error) {
 	form := _http.NewUrlValues(r)
 	errors := make(map[string]error)
-	getAndCollect := func(get func(string) (string, error), key string, variable *string) {
+	getAndCollect := func(get func(string) (string, error), key string, variable *string, validators ...func(string) error) {
 		val, err := get(key)
+		*variable = val
 		if err != nil {
 			errors[key] = err
+			return
 		}
-		*variable = val
+		for _, v := range validators {
+			err := v(val)
+			if err != nil {
+				errors[key] = err
+				return
+			}
+		}
 	}
 	if _id := form.Trim(CustomerId); _id == "" {
 		c.Id = contact.NewId()
@@ -198,13 +210,21 @@ func parseContact(r *http.Request) (c contact.Contact, err error) {
 	} else {
 		c.Id = id
 	}
-	getAndCollect(form.Trim_NotBlank, "FirstName", &c.FirstName)
+
+	getAndCollect(form.Trim_NotBlank, "FirstName", &c.FirstName, nameRegEx.Validate)
 	getAndCollect(form.Trim_NotBlank, "LastName", &c.LastName)
 	getAndCollect(form.Trim_NotBlank, "Email", &c.Email)
 	c.Phone = form.Trim("Phone")
-	if len(errors) > 0 {
-		return c, fmt.Errorf("%#v", errors)
-	} else {
-		return c, nil
+	return c, errors
+}
+
+type re struct {
+	*regexp.Regexp
+}
+
+func (me re) Validate(val string) error {
+	if !me.MatchString(val) {
+		return fmt.Errorf("%q did not match %#q", val, me.Regexp.String())
 	}
+	return nil
 }
