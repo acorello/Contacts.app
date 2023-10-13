@@ -29,17 +29,17 @@ func (my ResourcePaths) Validated() (v validResourcePaths, err error) {
 	return validResourcePaths(my), nil
 }
 
-func (my validResourcePaths) contactResourceURL(c contact.Contact, path string) template.URL {
+func contactResourceURL(c contact.Contact, resourcePath string) template.URL {
 	q := url.Values{}
 	q.Add("Id", c.Id.String())
 	u := url.URL{
-		Path:     path,
+		Path:     resourcePath,
 		RawQuery: q.Encode(),
 	}
 	return template.URL(u.String())
 }
 
-func (my validResourcePaths) searchPageURL(page contact.Page, searchTerm string) template.URL {
+func searchPageURL(page contact.Page, searchTerm, searchPagePath string) template.URL {
 	q := url.Values{}
 	if searchTerm != "" {
 		q.Add("SearchTerm", searchTerm)
@@ -47,7 +47,7 @@ func (my validResourcePaths) searchPageURL(page contact.Page, searchTerm string)
 	q.Add("pageOffset", strconv.Itoa(page.Offset))
 	q.Add("pageSize", strconv.Itoa(page.Size))
 	u := url.URL{
-		Path:     my.List,
+		Path:     searchPagePath,
 		RawQuery: q.Encode(),
 	}
 	return template.URL(u.String())

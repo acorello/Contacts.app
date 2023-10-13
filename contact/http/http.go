@@ -85,7 +85,7 @@ func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// should I move error handling within the template package? maybe better now to just panic?
 		urls := ht.ContactPageURLs{
 			ContactList: template.URL(h.List),
-			ContactForm: h.contactResourceURL(contact, h.Form),
+			ContactForm: contactResourceURL(contact, h.Form),
 		}
 		if err := ht.WriteContact(w, contact, urls); err != nil {
 			log.Printf("error rendering template: %v", err)
@@ -122,8 +122,8 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 		renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
 			ContactForm: contactForm,
 			URLs: ht.ContactFormPageURLs{
-				ContactForm:       h.contactResourceURL(contact, h.Form),
-				PatchContactEmail: h.contactResourceURL(contact, h.Email),
+				ContactForm:       contactResourceURL(contact, h.Form),
+				PatchContactEmail: contactResourceURL(contact, h.Email),
 			},
 		})
 	} else {
@@ -146,7 +146,7 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 		urls := ht.ContactFormPageURLs{
 			ContactForm:       template.URL(h.Form),
 			ContactList:       template.URL(h.List),
-			PatchContactEmail: h.contactResourceURL(contactForm.Contact, h.Email),
+			PatchContactEmail: contactResourceURL(contactForm.Contact, h.Email),
 		}
 		renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
 			ContactForm: contactForm,
@@ -166,9 +166,9 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 		} else {
 			urls := ht.ContactFormPageURLs{
 				ContactList:       template.URL(h.List),
-				ContactForm:       h.contactResourceURL(contact, h.Form),
-				DeleteContact:     h.contactResourceURL(contact, h.Root),
-				PatchContactEmail: h.contactResourceURL(contact, h.Email),
+				ContactForm:       contactResourceURL(contact, h.Form),
+				DeleteContact:     contactResourceURL(contact, h.Root),
+				PatchContactEmail: contactResourceURL(contact, h.Email),
 			}
 			renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
 				ContactForm: ht.NewFormWith(contact),
@@ -217,7 +217,7 @@ func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 	var nextPageURL template.URL
 	if more {
-		nextPageURL = h.searchPageURL(page.Next(), searchTerm)
+		nextPageURL = searchPageURL(page.Next(), searchTerm, h.List)
 	}
 	templateParams := ht.SearchPage{
 		SearchTerm: searchTerm,
