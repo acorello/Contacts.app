@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"slices"
 	"strconv"
+	"strings"
 
 	"dev.acorello.it/go/contacts/contact"
 )
@@ -15,8 +16,35 @@ const (
 	CustomerId = "Id"
 )
 
+type ResourcePath string
+
+func (me ResourcePath) Add(param, value string) ResourcePath {
+	params := url.Values{}
+	params.Add(param, value)
+	_current := string(me)
+	var separator string
+	if strings.Contains(_current, "?") {
+		separator = "&"
+	} else {
+		separator = "?"
+	}
+	return ResourcePath(_current + separator + params.Encode())
+}
+
+func (me ResourcePath) Path() string {
+	return string(me)
+}
+
+func (me ResourcePath) TemplateURL() template.URL {
+	return template.URL(me)
+}
+
+func (me ResourcePath) String() string {
+	return string(me)
+}
+
 type ResourcePaths struct {
-	Root, Form, List, Email string
+	Root, Form, List, Email ResourcePath
 }
 
 type validResourcePaths ResourcePaths
@@ -27,16 +55,6 @@ func (my ResourcePaths) Validated() (v validResourcePaths, err error) {
 		return v, fmt.Errorf("path elements must be unique. Got %+v", my)
 	}
 	return validResourcePaths(my), nil
-}
-
-func contactResourceURL(c contact.Contact, resourcePath string) template.URL {
-	q := url.Values{}
-	q.Add("Id", c.Id.String())
-	u := url.URL{
-		Path:     resourcePath,
-		RawQuery: q.Encode(),
-	}
-	return template.URL(u.String())
 }
 
 func searchPageURL(page contact.Page, searchTerm, searchPagePath string) template.URL {

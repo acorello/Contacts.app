@@ -26,8 +26,8 @@ func main() {
 		panic(err)
 	} else {
 		contactHandler := http_contact.NewContactHandler(validatedPaths, &repo)
-		mux.HandleFunc(validatedPaths.Root, LoggingHandler(contactHandler))
-		homeRedirect := http.RedirectHandler(validatedPaths.List, http.StatusFound)
+		mux.HandleFunc(validatedPaths.Root.String(), LoggingHandler(contactHandler))
+		homeRedirect := http.RedirectHandler(validatedPaths.List.String(), http.StatusFound)
 		mux.HandleFunc("/", LoggingHandler(homeRedirect))
 	}
 

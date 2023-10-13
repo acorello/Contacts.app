@@ -28,7 +28,7 @@ func NewContactHandler(paths validResourcePaths, repo contact.Repository) contac
 
 func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch p := r.URL.Path; p {
-	case h.Root:
+	case h.Root.Path():
 		switch r.Method {
 		case http.MethodGet:
 			h.Get(w, r)
@@ -37,7 +37,7 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.Form:
+	case h.Form.Path():
 		switch r.Method {
 		case http.MethodGet:
 			h.GetForm(w, r)
@@ -46,14 +46,14 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.List:
+	case h.List.Path():
 		switch r.Method {
 		case http.MethodGet:
 			h.GetList(w, r)
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.Email:
+	case h.Email.Path():
 		switch r.Method {
 		case http.MethodPatch:
 			h.PatchEmail(w, r)
@@ -83,9 +83,10 @@ func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
 		// should I move error handling within the template package? maybe better now to just panic?
+		_id := contact.Id.String()
 		urls := ht.ContactPageURLs{
 			ContactList: template.URL(h.List),
-			ContactForm: contactResourceURL(contact, h.Form),
+			ContactForm: h.Form.Add(CustomerId, _id).TemplateURL(),
 		}
 		if err := ht.WriteContact(w, contact, urls); err != nil {
 			log.Printf("error rendering template: %v", err)
@@ -109,7 +110,7 @@ func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.contactRepository.Delete(id)
-	http.Redirect(w, r, h.List, http.StatusSeeOther)
+	http.Redirect(w, r, h.List.String(), http.StatusSeeOther)
 }
 
 func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
@@ -119,18 +120,19 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing contact form: %+v", errors)
 		contactForm := ht.NewFormWith(contact)
 		contactForm.Errors = errors
+		_id := contact.Id.String()
 		renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
 			ContactForm: contactForm,
 			URLs: ht.ContactFormPageURLs{
-				ContactForm:       contactResourceURL(contact, h.Form),
-				PatchContactEmail: contactResourceURL(contact, h.Email),
+				ContactForm:       h.Form.Add(CustomerId, _id).TemplateURL(),
+				PatchContactEmail: h.Email.Add(CustomerId, _id).TemplateURL(),
 			},
 		})
 	} else {
 		// TODO: implement validation (eg. [e-mail]--N--1--[contactId] ) and error handling
 		h.contactRepository.Store(contact)
 		log.Printf("Stored: %#v", contact)
-		http.Redirect(w, r, h.List, http.StatusFound)
+		http.Redirect(w, r, h.List.String(), http.StatusFound)
 	}
 	if renderingError != nil {
 		log.Printf("error rendering template: %v", renderingError)
@@ -143,10 +145,12 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 	if existingContact := q.Has(CustomerId); !existingContact {
 		// blank form to create a new contact
 		contactForm := ht.NewForm()
+		contactForm.Id = contact.NewId()
+		_id := contactForm.Id.String()
 		urls := ht.ContactFormPageURLs{
-			ContactForm:       template.URL(h.Form),
-			ContactList:       template.URL(h.List),
-			PatchContactEmail: contactResourceURL(contactForm.Contact, h.Email),
+			ContactForm:       h.Form.Add(CustomerId, _id).TemplateURL(),
+			ContactList:       h.List.TemplateURL(),
+			PatchContactEmail: h.Email.Add(CustomerId, _id).TemplateURL(),
 		}
 		renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
 			ContactForm: contactForm,
@@ -164,11 +168,12 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 		if !found {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
+			_id := contact.Id.String()
 			urls := ht.ContactFormPageURLs{
-				ContactList:       template.URL(h.List),
-				ContactForm:       contactResourceURL(contact, h.Form),
-				DeleteContact:     contactResourceURL(contact, h.Root),
-				PatchContactEmail: contactResourceURL(contact, h.Email),
+				ContactList:       h.List.TemplateURL(),
+				ContactForm:       h.Form.Add(CustomerId, _id).TemplateURL(),
+				DeleteContact:     h.Root.Add(CustomerId, _id).TemplateURL(),
+				PatchContactEmail: h.Email.Add(CustomerId, _id).TemplateURL(),
 			}
 			renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
 				ContactForm: ht.NewFormWith(contact),
@@ -183,7 +188,7 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 
 func (h contactHTTPHandler) PatchEmail(w http.ResponseWriter, r *http.Request) {
 	q := _http.NewUrlValues(r)
-	contactId := contact.Id(q.Trim("Id"))
+	contactId := contact.Id(q.Trim(CustomerId))
 	contactEmail := q.Trim("Email")
 	log.Printf("validating e-mail %q for contactId %q", contactEmail, contactId)
 	existingContactId, found := h.contactRepository.FindIdByEmail(contactEmail)
@@ -217,7 +222,7 @@ func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 	var nextPageURL template.URL
 	if more {
-		nextPageURL = searchPageURL(page.Next(), searchTerm, h.List)
+		nextPageURL = searchPageURL(page.Next(), searchTerm, h.List.String())
 	}
 	templateParams := ht.SearchPage{
 		SearchTerm: searchTerm,
