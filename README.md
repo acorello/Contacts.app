@@ -58,6 +58,12 @@ I'm not implementing a full-featured app, I'm just implementing what the tutoria
 
   all code that represents that entity lives within that entity folder (incl. http handlers, html templates, etc.)
 
+- template rendering API…
+
+  - template files are embedded `embed.FS` in the application and collected in dedicated package
+  - each package of templates exposes one `Write_TemplateName_(io.Writer, TemplateParams)` functions per templates. The function accepts a struct consisting of all the parameters required or supported by the template.
+  - a `templates` package sits at the root of the project and contains the common HTML layout code
+
 - make as much of the code URL agnostic as possible
 
   a REST-ful principle is that clients should be agnostic of the URL structure. Strictly speaking, the http-handler also doesn't need to know the URL path and I decided to try pushing this further and see what code end up writing and what architectural properties I would get if I made as much of the components of the app URL agnostic.
@@ -65,3 +71,7 @@ I'm not implementing a full-featured app, I'm just implementing what the tutoria
   I'm not sure if I will get valuable properties from this principles but I took it as an exercise in single-responsibility principles, contract design between the http handler and its environment; perhaps implementing configurable or dynamic paths could be useful although http-headers and query parameters are probably enough for any use case. Just consider it a 'calisthenics' exercise, if you don't see the point.
 
   One result you will notice is that the handler declares the kinds of URLs it supports for its entity (one for viewing, one for listing, one for creating a new instance, etc.) and it's allowed to add parameters (eg. the resource ID), the HTTP mux decides the actual URL root-path to assign to an HTTP handler.
+
+## Idiomatic Go conventions I've broken
+
+- I often use the name `me` or `my` for the method receiver…
