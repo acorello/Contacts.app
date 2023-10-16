@@ -4,15 +4,32 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
 
 	"html/template"
 
 	"dev.acorello.it/go/contacts/contact"
 	"dev.acorello.it/go/contacts/contact/http/ht"
+	"dev.acorello.it/go/contacts/seq"
 
 	_http "dev.acorello.it/go/contacts/http"
 )
+
+type ResourcePaths struct {
+	Root, Form, List, Email ResourcePath
+}
+
+type validResourcePaths ResourcePaths
+
+// paths should be distinct or this will panic
+func (my ResourcePaths) Validated() (v validResourcePaths, err error) {
+	if seq.HasDuplicates(my.Root, my.Form, my.List, my.Email) {
+		return v, fmt.Errorf("path elements must be unique. Got %+v", my)
+	}
+	return validResourcePaths(my), nil
+}
 
 type contactHTTPHandler struct {
 	validResourcePaths
@@ -234,6 +251,20 @@ func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
 	if err := ht.WriteContactList(w, templateParams); err != nil {
 		log.Printf("error rendering template: %v", err)
 	}
+}
+
+func searchPageURL(page contact.Page, searchTerm, searchPagePath string) template.URL {
+	q := url.Values{}
+	if searchTerm != "" {
+		q.Add("SearchTerm", searchTerm)
+	}
+	q.Add("pageOffset", strconv.Itoa(page.Offset))
+	q.Add("pageSize", strconv.Itoa(page.Size))
+	u := url.URL{
+		Path:     searchPagePath,
+		RawQuery: q.Encode(),
+	}
+	return template.URL(u.String())
 }
 
 var nameRegEx = re{regexp.MustCompile(`^\w+(?:[- ']\w+)*$`)}
