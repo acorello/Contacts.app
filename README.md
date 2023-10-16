@@ -50,6 +50,8 @@ The application replicates exactly the one used in the book [Hypermedia Systems]
 
    I'm not happy with how I'm parsing and loading templates but I haven't found way that seems idiomatic, logical, and is optimal (parse each template only once and then compose the parsed-trees)
 
+1. git commit messages are a single line and only meant as short-term reminders
+
 ## Design Principles
 
 I'm not implementing a full-featured app, I'm just implementing what the tutorial presented my way, with an eye to the future, so the design principles listed here are just the ones I consciously decided and implemented up to the point I found the tutorial relevant for my goals.
