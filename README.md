@@ -15,10 +15,10 @@ The application replicates exactly the one used in the book [Hypermedia Systems]
 
 ## Project Non-Goals
 
+- be a production-realistic example
 - authentication and security features
 - data-persistance
 - DRY-out all the things
-- be an example of production-ready architecture
 - …etc
 
 ## Constraints
@@ -37,6 +37,7 @@ The application replicates exactly the one used in the book [Hypermedia Systems]
 ## Shortcuts
 
 1. only an in-memory db, but design program against an interface (not a concrete implementation)
+1. the DB interface stands for a component performing I/O and so should accept a `context` and return an error in all methods; I haven't bothered because of the [Project Non-Goals](#project-non-goals)
 1. no tests (unless for exploratory reasons)
 
    the goal here is to learn not to deliver a production system; this project is a canvas where I'm painting ideas using code
