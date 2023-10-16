@@ -129,7 +129,6 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 			},
 		})
 	} else {
-		// TODO: implement validation (eg. [e-mail]--N--1--[contactId] ) and error handling
 		h.contactRepository.Store(contact)
 		log.Printf("Stored: %#v", contact)
 		http.Redirect(w, r, h.List.String(), http.StatusFound)
@@ -186,6 +185,7 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Used only for validation purposes at the moment
 func (h contactHTTPHandler) PatchEmail(w http.ResponseWriter, r *http.Request) {
 	q := _http.NewUrlValues(r)
 	contactId := contact.Id(q.Trim(CustomerId))

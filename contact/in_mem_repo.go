@@ -1,6 +1,7 @@
 package contact
 
 import (
+	"fmt"
 	"log"
 	"slices"
 )
@@ -156,13 +157,25 @@ func (me InMemoryRepository) FindAll(page Page) (result []Contact, more bool) {
 	return result, maxEnd > pageEnd
 }
 
+// TODO: implement validation ( eg. [e-mail]--N--1--[contactId] )
 func (me *InMemoryRepository) Store(c Contact) error {
 	log.Printf("Storing %#v", c)
+	if err := me.checkEmailOwner(c); err != nil {
+		return err
+	}
 	existingIdx := slices.IndexFunc(me.contacts, c.Id.HasSameId)
 	if existingIdx >= 0 {
 		me.contacts[existingIdx] = c
 	} else {
 		me.contacts = append(me.contacts, c)
+	}
+	return nil
+}
+
+func (me *InMemoryRepository) checkEmailOwner(c Contact) error {
+	var alreadyAssignedId, found = me.FindIdByEmail(c.Email)
+	if found && c.Id != alreadyAssignedId {
+		return fmt.Errorf("e-mail already assigned to contact with id %q", alreadyAssignedId)
 	}
 	return nil
 }
