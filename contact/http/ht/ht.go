@@ -28,7 +28,7 @@ func init() {
 func makeTemplate(files fs.FS, templateFile string) *template.Template {
 	t := template.Must(template.ParseFS(templates.CommonFS(), "layout.html"))
 	template.Must(t.ParseFS(files, templateFile))
-	names := seq.Map(t.Templates(), (*template.Template).Name)
+	names := seq.Map((*template.Template).Name, t.Templates()...)
 	log.Printf("%q associated templates: %#v", templateFile, names)
 	return t
 }

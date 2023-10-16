@@ -5,10 +5,7 @@ import (
 	"slices"
 )
 
-func Map[T any, U any](ts []T, f func(T) U) (res []U) {
-	if ts == nil {
-		return nil
-	}
+func Map[T any, U any](f func(T) U, ts ...T) (res []U) {
 	for _, v := range ts {
 		res = append(res, f(v))
 	}
