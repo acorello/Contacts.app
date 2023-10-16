@@ -26,8 +26,7 @@ func (my UrlValues) Trim(name string) string {
 }
 
 func (my UrlValues) IntOrPanic(name string, defaultIfBlank int) int {
-	v := my.Get(name)
-	v = strings.TrimSpace(v)
+	v := my.Trim(name)
 	if v == "" {
 		return defaultIfBlank
 	}
@@ -39,9 +38,8 @@ func (my UrlValues) IntOrPanic(name string, defaultIfBlank int) int {
 }
 
 func (my UrlValues) Trim_NotBlank(name string) (string, error) {
-	v := my.Get(name)
-	v = strings.TrimSpace(v)
-	if len(v) == 0 {
+	v := my.Trim(name)
+	if v == "" {
 		return "", fmt.Errorf("%q is blank or empty", name)
 	}
 	return v, nil
