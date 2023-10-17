@@ -6,14 +6,16 @@ import (
 
 	"dev.acorello.it/go/contacts/contact"
 	http_contact "dev.acorello.it/go/contacts/contact/http"
-	"dev.acorello.it/go/contacts/static"
+	"dev.acorello.it/go/contacts/public_assets"
 )
 
 var repo = contact.NewPopulatedInMemoryContactRepository()
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/static/", LoggingHandler(static.FileServer()))
+	const publicRootPath = "/public/"
+	mux.HandleFunc(publicRootPath,
+		LoggingHandler(http.StripPrefix(publicRootPath, public_assets.FileServer())))
 
 	contactResourcePaths := http_contact.ResourcePaths{
 		Root:  "/contact/",

@@ -1,4 +1,4 @@
-package static
+package public_assets
 
 import (
 	"embed"
@@ -9,5 +9,5 @@ import (
 var _fs embed.FS
 
 func FileServer() http.Handler {
-	return http.StripPrefix("/static/", http.FileServer(http.FS(_fs)))
+	return http.FileServer(http.FS(_fs))
 }
