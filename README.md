@@ -2,6 +2,33 @@
 
 The application replicates exactly the one used in the book [Hypermedia Systems](https://hypermedia.systems) (a tutorial about HTMX, HyperView and REST-fulness) but it's designed according to some self-imposed constraints and design principles.
 
+The tutorial presents a single entity: the Contact; but I'm writing the project as if more will come.
+
+## HTMX by example
+
+```html
+<input
+  name="Email"
+  id="Email"
+  type="email"
+  placeholder="Email"
+  value="{{ .Email }}"
+  hx-patch="{{ $.URLs.PatchContactEmail }}"
+  hx-target="next .error" />
+<span class="error">{{ .Errors.Email }}</span>
+```
+
+The `input[type=email]` becomes an HTML control that will fire a `PATCH $.URLs.PatchContactEmail` when the default event (`changed`, i.e. focus moved to the nest element) happened. The `hx-target="next .error"` instructs the browser to replace the following `span[class=error]` element with the response; the `next .error` is interpreted as find the next element in the DOM tree having class `error`, and it's interpreted as [HyperScript](https://hyperscript.org), a member of the HTMX family.
+
+More examples and excellent docs about HTMX can be found on [the HTMX docs homepage](https://htmx.org/docs/).
+
+The tutorial uses the case of an address-book CRUD application to demonstrate how to:
+
+- turn a traditional full-page refresh web-app into a smoother UI\UX (no full-page refresh) without changing the server-side implemntation, by just adding the `hx-boost` to the HTML body
+- implement server-side valiadation of an individual fields and display of validation response
+- send request with HTTP methods not natively supported by HTML
+- implement pagination and continuous scrolling
+
 ## Project Goals
 
 - review REST-ful (as Fielding's dissertation) architecture
@@ -10,8 +37,6 @@ The application replicates exactly the one used in the book [Hypermedia Systems]
 - learn Go standard library
 - sharpen my Go programming skills
 - draft the way I think a web-app and a project should be organized according to my take on DDD
-
-  The tutorial presents a single entity: the Contact. But I'm writing the project as if more will come.
 
 ## Project Non-Goals
 
@@ -77,3 +102,4 @@ I'm not implementing a full-featured app, I'm just implementing what the tutoria
 ## Idiomatic Go conventions I've broken
 
 - I often use the name `me` or `my` for the method receiver…
+- I have sometimes used else-blocks for the happy path where it's often advised to keep the happy path at "indentation level zero".
