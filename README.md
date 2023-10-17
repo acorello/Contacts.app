@@ -21,20 +21,23 @@ The `input[type=email]` becomes an HTML control that will fire a `PATCH $.URLs.P
 
 More examples and excellent docs about HTMX can be found on [the HTMX docs homepage](https://htmx.org/docs/).
 
+## Application and HTMX features implemented
+
 The tutorial uses the case of an address-book CRUD application to demonstrate how to:
 
 - turn a traditional full-page refresh web-app into a smoother UI\UX (no full-page refresh) without changing the server-side implemntation, by just adding the `hx-boost` to the HTML body
+- implement a simple search functionality
+- implement pagination with on-demand or continuous scrolling
+- send request with HTTP methods not natively supported by HTML (eg. DELETE)
 - implement server-side valiadation of an individual fields and display of validation response
-- send request with HTTP methods not natively supported by HTML
-- implement pagination and continuous scrolling
 
 ## Project Goals
 
-- review REST-ful (as Fielding's dissertation) architecture
-- learn fundamentals of Go Web development
+- see how HTMX facilitates a REST-ful (as Fielding's dissertation) architecture
+- practice fundamentals of web development in Go
 - learn fundamentals of HTMX
 - learn Go standard library
-- sharpen my Go programming skills
+- practice my Go programming skills
 - draft the way I think a web-app and a project should be organized according to my take on DDD
 
 ## Project Non-Goals
