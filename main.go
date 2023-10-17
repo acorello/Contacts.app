@@ -23,7 +23,7 @@ func main() {
 	}
 
 	if validatedPaths, err := contactResourcePaths.Validated(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	} else {
 		contactHandler := http_contact.NewContactHandler(validatedPaths, &repo)
 		mux.HandleFunc(validatedPaths.Root.String(), LoggingHandler(contactHandler))
