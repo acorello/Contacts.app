@@ -33,26 +33,24 @@ The tutorial uses the case of an address-book CRUD application to demonstrate ho
 - send request with HTTP methods not natively supported by HTML (eg. DELETE)
 - implement server-side valiadation of an individual fields and display of validation response
 
-## Project Goals
+## My Goals
 
 - see how HTMX facilitates a REST-ful (as Fielding's dissertation) architecture
-- practice fundamentals of web development in Go
+- practice fundamentals of web development in Go and its standard library
 - learn fundamentals of HTMX
-- learn Go standard library
-- practice my Go programming skills
-- draft the way I think a web-app and a project should be organized according to my take on DDD
+- draft a DDD-inspired project structure
 
-## Project Non-Goals
+## My Non-Goals
 
-- be a production-realistic example
-- authentication and security features
+- be a production-realistic example (eg. don't worry about authentication, security, observability, testing, etc.)
+- precise validation and error reporting
 - data-persistance
 - DRY-out all the things
 - …etc
 
 ## Constraints
 
-1. use only Go stdlib and don't spend time re-inventing a fancy web framework
+1. use only Go stdlib and don't spend time re-inventing a fancy web or validation framework
 
    1. therefore, I haven't used paths pattern-matching (eg. `/myentity/:id/property`). Instead I pass all the dynamic values in the URL query
    1. no reflection or generic logic to associate http-handlers with http methods. Instead I use a `switch-case` on the http-method value.
@@ -66,11 +64,8 @@ The tutorial uses the case of an address-book CRUD application to demonstrate ho
 ## Shortcuts
 
 1. only an in-memory db, but design program against an interface (not a concrete implementation)
-1. the DB interface stands for a component performing I/O and so should accept a `context` and return an error in all methods; I haven't bothered because of the [Project Non-Goals](#project-non-goals)
+1. the DB interface stands for a component performing I/O and so should accept a `context` and return an error in all methods; I haven't bothered because of the [My Non-Goals](#my-non-goals)
 1. no tests (unless for exploratory reasons)
-
-   the goal here is to learn not to deliver a production system; this project is a canvas where I'm painting ideas using code
-
 1. just-enough CSS
 
    Aesthetic is not a goal here but we also don't want our eyes to bleed; so I just styled it with [PicoCSS](https://picocss.com) with default settings… and semantic HTML is all I need write, sweet.
@@ -83,8 +78,6 @@ The tutorial uses the case of an address-book CRUD application to demonstrate ho
 
 ## Design Principles
 
-I'm not implementing a full-featured app, I'm just implementing what the tutorial presented my way, with an eye to the future, so the design principles listed here are just the ones I consciously decided and implemented up to the point I found the tutorial relevant for my goals.
-
 - application code is grouped by entity
 
   all code that represents that entity lives within that entity folder (incl. http handlers, html templates, etc.)
@@ -95,13 +88,7 @@ I'm not implementing a full-featured app, I'm just implementing what the tutoria
   - each package of templates exposes one `Write_TemplateName_(io.Writer, TemplateParams)` functions per templates. The function accepts a struct consisting of all the parameters required or supported by the template.
   - a `templates` package sits at the root of the project and contains the common HTML layout code
 
-- make as much of the code URL agnostic as possible
-
-  a REST-ful principle is that clients should be agnostic of the URL structure. Strictly speaking, the http-handler also doesn't need to know the URL path and I decided to try pushing this further and see what code end up writing and what architectural properties I would get if I made as much of the components of the app URL agnostic.
-
-  I'm not sure if I will get valuable properties from this principles but I took it as an exercise in single-responsibility principles, contract design between the http handler and its environment; perhaps implementing configurable or dynamic paths could be useful although http-headers and query parameters are probably enough for any use case. Just consider it a 'calisthenics' exercise, if you don't see the point.
-
-  One result you will notice is that the handler declares the kinds of URLs it supports for its entity (one for viewing, one for listing, one for creating a new instance, etc.) and it's allowed to add parameters (eg. the resource ID), the HTTP mux decides the actual URL root-path to assign to an HTTP handler.
+- let the handler require which kinds of URL it will support (eg. listing, viewing, editing) and what parameters it will expect; let the HTTP server setup code decide the specific URL to use
 
 ## Idiomatic Go conventions I've broken
 
