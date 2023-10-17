@@ -4,18 +4,17 @@ The application replicates exactly the one used in the book [Hypermedia Systems]
 
 The tutorial presents a single entity: the Contact; but I'm writing the project as if more will come.
 
-## HTMX by example
+## An HTMX example
 
 ```html
 <input
-  name="Email"
-  id="Email"
   type="email"
+  name="Email"
   placeholder="Email"
   value="{{ .Email }}"
-  hx-patch="{{ $.URLs.PatchContactEmail }}"
+  hx-patch="/contact/email"
   hx-target="next .error" />
-<span class="error">{{ .Errors.Email }}</span>
+<span class="error"></span>
 ```
 
 The `input[type=email]` becomes an HTML control that will fire a `PATCH $.URLs.PatchContactEmail` when the default event (`changed`, i.e. focus moved to the nest element) happened. The `hx-target="next .error"` instructs the browser to replace the following `span[class=error]` element with the response; the `next .error` is interpreted as find the next element in the DOM tree having class `error`, and it's interpreted as [HyperScript](https://hyperscript.org), a member of the HTMX family.
