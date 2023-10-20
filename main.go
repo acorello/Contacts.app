@@ -33,7 +33,7 @@ func main() {
 		mux.HandleFunc("/", LoggingHandler(homeRedirect))
 	}
 
-	address := "localhost:8080"
+	address := "0.0.0.0:8080"
 	log.Printf("Starting server at %q", address)
 	if serverErr := http.ListenAndServe(address, mux); serverErr != nil {
 		log.Fatal(serverErr)
