@@ -15,3 +15,4 @@ clean:
 .PHONY: ping
 ping:
 	@echo "PONG"
+	go version
