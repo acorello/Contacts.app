@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - run: docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.23.1 make exe.linux
-      - run: ls -l
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.23.1'
+      - run: make exe.linux
       - uses: actions/upload-artifact@v3
         with:
           name: contacts.linux
