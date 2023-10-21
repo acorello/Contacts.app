@@ -6,8 +6,13 @@ on:
     tags:
       - act*
 jobs:
-  make-ping:
+  build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - run: make ping
+      - run: docker run --rm -v "$PWD":/usr/src -w /usr/src golang:1.23.1 make exe.linux
+      - run: ls -l
+      - uses: actions/upload-artifact@v3
+        with:
+          name: contacts.linux
+          path: contacts.linux
