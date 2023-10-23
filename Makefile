@@ -1,6 +1,6 @@
 export GOFLAGS=-trimpath
 
-OUT_DIR?=_tmp/build
+OUT_DIR?=_tmp/built
 
 $(OUT_DIR):
 	mkdir -p $(OUT_DIR)
