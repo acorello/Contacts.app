@@ -1,13 +1,12 @@
 export GOFLAGS=-trimpath
 
-OUT_DIR?=_tmp/built
-ARTEFACT_NAME?=contacts
 
-$(OUT_DIR):
+.PHONY: .build
+.build: OUT_DIR?=_tmp/built/$(GOOS)
+.build: ARTEFACT_NAME?=contacts
+.build: ARTEFACT_PATH=$(OUT_DIR)/$(ARTEFACT_NAME)
+.build:
 	@mkdir -p $(OUT_DIR)
-
-.build: ARTEFACT_PATH=$(OUT_DIR)/$(GOOS)/$(ARTEFACT_NAME)
-.build: $(OUT_DIR)
 	@echo "Building" $(ARTEFACT_PATH)
 	@go build -o $(ARTEFACT_PATH)
 
