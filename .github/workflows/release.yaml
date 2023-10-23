@@ -20,9 +20,10 @@ jobs:
       - name: Make
         run: |
           make build.linux
+          make build.macos
       - name: Upload Artefact
         uses: actions/upload-artifact@v3
         with:
           if-no-files-found: error
-          name: contacts.linux
+          name: contacts.zip
           path: ${{ env.OUT_DIR }}
