@@ -1,6 +1,6 @@
 .PHONY: .build
-.build: OUT_DIR?=_tmp/built/$(GOOS)
-.build: ARTEFACT_NAME?=contacts
+.build: OUT_DIR?=_tmp/built
+.build: ARTEFACT_NAME?=contacts.$(GOOS)
 .build: ARTEFACT_PATH=$(OUT_DIR)/$(ARTEFACT_NAME)
 .build:
 ifeq ($(strip $(GOOS)),)
