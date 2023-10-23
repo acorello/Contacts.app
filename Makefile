@@ -21,6 +21,9 @@ build.linux: .build
 build.macos: GOOS = darwin
 build.macos: .build
 
+.PHONY: deployable
+deployable: build.linux
+
 .PHONY: clean
 clean:
 	rm -rf $(OUT_DIR)
