@@ -25,5 +25,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           if-no-files-found: error
-          name: contacts.zip
+          name: release_files
           path: ${{ env.OUT_DIR }}
