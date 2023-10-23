@@ -1,14 +1,14 @@
-export GOFLAGS=-trimpath
-
-
 .PHONY: .build
 .build: OUT_DIR?=_tmp/built/$(GOOS)
 .build: ARTEFACT_NAME?=contacts
 .build: ARTEFACT_PATH=$(OUT_DIR)/$(ARTEFACT_NAME)
 .build:
+ifeq ($(strip $(GOOS)),)
+	$(error  "GOOS is blank")
+endif
 	@mkdir -p $(OUT_DIR)
 	@echo "Building" $(ARTEFACT_PATH)
-	@go build -o $(ARTEFACT_PATH)
+	@go build -trimpath -o $(ARTEFACT_PATH)
 
 .PHONY: build.linux
 build.linux: GOOS = linux
