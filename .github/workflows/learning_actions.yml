@@ -8,8 +8,12 @@ jobs:
   greet:
     runs-on: ubuntu-latest
     steps:
-      - name: Send greeting
+      - name: Setup Env
         run: |
-          echo "Alice" > /tmp/greeting_name
-          export NAME=$(</tmp/greeting_name)
+          cat $GITHUB_ENV
+          env
+          export NAME="Alice"
+          env > $GITHUB_ENV
+      - name: Send Greeting
+        run: |
           echo "Hello $NAME"
