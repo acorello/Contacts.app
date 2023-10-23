@@ -22,4 +22,4 @@ jobs:
         with:
           if-no-files-found: error
           name: app
-          path: env.OUT_DIR
+          path: ${{ env.OUT_DIR }}
