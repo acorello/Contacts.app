@@ -7,14 +7,19 @@ on:
       - act*
 jobs:
   build:
+    env:
+      OUT_DIR: '/tmp/OUTPUT'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
-      - run: make deployable
+      - name: build
+        run: |
+          make build.linux
       - uses: actions/upload-artifact@v3
         with:
-          name: contacts.linux
-          path: contacts.linux
+          if-no-files-found: error
+          name: app
+          path: env.OUT_DIR

@@ -1,18 +1,15 @@
 export GOFLAGS=-trimpath
 
 OUT_DIR?=_tmp/built
+ARTEFACT_NAME?=contacts
 
 $(OUT_DIR):
 	@mkdir -p $(OUT_DIR)
 
-EXENAME := contacts
-
-GOOS = _
-
-.build: OUT=$(OUT_DIR)/$(GOOS)/$(EXENAME)
+.build: ARTEFACT_PATH=$(OUT_DIR)/$(GOOS)/$(ARTEFACT_NAME)
 .build: $(OUT_DIR)
-	@echo 'OUT=$(OUT)'
-	@go build -o $(OUT)
+	@echo "Building" $(ARTEFACT_PATH)
+	@go build -o $(ARTEFACT_PATH)
 
 .PHONY: build.linux
 build.linux: GOOS = linux
@@ -21,9 +18,6 @@ build.linux: .build
 .PHONY: build.macos
 build.macos: GOOS = darwin
 build.macos: .build
-
-.PHONY: deployable
-deployable: build.linux
 
 .PHONY: clean
 clean:
