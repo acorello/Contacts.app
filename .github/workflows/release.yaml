@@ -1,4 +1,4 @@
-name: main
+name: Release
 on:
   push:
     branches:
@@ -11,14 +11,17 @@ jobs:
       OUT_DIR: ${{ github.workspace }}/_OUTPUT
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - name: Checkoug
+        uses: actions/checkout@v4
+      - name: Setup Go toolchain
+        uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
-      - name: build
+      - name: Make
         run: |
           make build.linux
-      - uses: actions/upload-artifact@v3
+      - name: Upload Artefact
+        uses: actions/upload-artifact@v3
         with:
           if-no-files-found: error
           name: app
