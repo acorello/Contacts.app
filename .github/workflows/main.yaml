@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     env:
-      OUT_DIR: '/tmp/OUTPUT'
+      OUT_DIR: ${{ github.workspace }}/_OUTPUT
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
