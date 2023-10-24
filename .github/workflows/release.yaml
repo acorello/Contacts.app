@@ -28,6 +28,8 @@ jobs:
             -release-name "Release ${{ github.ref_type }} ${{ github.ref_name }}" \
             -assets-dir ${{ env.OUT_DIR }}
 
+          echo "NEXT"
+
       - name: Upload Artefact
         uses: actions/upload-artifact@v3
         with:
