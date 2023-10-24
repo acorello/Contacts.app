@@ -7,6 +7,8 @@ on:
       - act*
 jobs:
   build:
+    permissions:
+      contents: write
     env:
       OUT_DIR: ${{ github.workspace }}/_OUTPUT
     runs-on: ubuntu-22.04
