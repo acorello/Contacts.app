@@ -1,0 +1,42 @@
+name: Hello FaaS
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - act*
+jobs:
+  deploy-function:
+    name: Deploy Hello FaaS
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: GCP Auth
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Deploy function
+        id: deploy_function
+        uses: google-github-actions/deploy-cloud-functions@main
+        with:
+          runtime: go121
+          project_id: contactsapp-403015
+          region: europe-west2
+          source_dir: hellofaas
+          name: HelloFaaS
+          entry_point: HelloFaaS
+          ingress_settings: ALLOW_ALL
+          deploy_timeout: 60 # default 300
+      - name: Test FaaS
+        id: test
+        run: curl "${{ steps.deploy_function.outputs.url }}"
