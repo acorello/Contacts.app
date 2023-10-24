@@ -16,6 +16,9 @@ build.linux: .build
 build.macos: GOOS = darwin
 build.macos: .build
 
+.PHONY: build.all
+build.all: build.linux build.macos
+
 .PHONY: clean
 clean:
 	@echo "Deleting $(OUT_DIR)"

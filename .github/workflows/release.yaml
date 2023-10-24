@@ -19,8 +19,15 @@ jobs:
           go-version-file: 'go.mod'
       - name: Make
         run: |
-          make build.linux
-          make build.macos
+          make build.all
+
+          _opstools/octoact_create_release \
+            -auth-token ${{ github.token }} \
+            -repo-owner ${{ github.repository_owner }} \
+            -repo Contacts.app \
+            -release-name "Release ${{ github.ref_type }} ${{ github.ref_name }}" \
+            -assets-dir ${{ env.OUT_DIR }}
+
       - name: Upload Artefact
         uses: actions/upload-artifact@v3
         with:
