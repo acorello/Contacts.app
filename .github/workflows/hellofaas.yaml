@@ -15,7 +15,7 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -36,7 +36,6 @@ jobs:
           name: HelloFaaS
           entry_point: HelloFaaS
           ingress_settings: ALLOW_ALL
-          deploy_timeout: 60 # default 300
       - name: Test FaaS
         id: test
         run: curl "${{ steps.deploy_function.outputs.url }}"
