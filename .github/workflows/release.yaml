@@ -22,9 +22,10 @@ jobs:
       - name: Make
         run: make build.all
       - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           _opstools/octoact_create_release \
-            -auth-token ${{ github.token }} \
             -repo-owner ${{ github.repository_owner }} \
             -repo Contacts.app \
             -release-name "Release ${{ github.ref_type }} ${{ github.ref_name }}" \
