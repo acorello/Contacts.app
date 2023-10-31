@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"dev.acorello.it/go/contacts/contact"
 	http_contact "dev.acorello.it/go/contacts/contact/http"
@@ -34,11 +37,34 @@ func main() {
 		mux.HandleFunc("/", LoggingHandler(homeRedirect))
 	}
 
-	address := bindAddress()
-	log.Printf("Starting server at %q", address)
-	if serverErr := http.ListenAndServe(address, mux); serverErr != nil {
-		log.Fatal(serverErr)
+	var srv = http.Server{
+		Addr:    bindAddress(),
+		Handler: mux,
 	}
+
+	shutdownDone := make(chan struct{})
+	go waitShutdownSignal(&srv, shutdownDone)
+
+	log.Printf("Starting server at %q", srv.Addr)
+	if err := srv.ListenAndServe(); err == http.ErrServerClosed {
+		<-shutdownDone
+		log.Printf("Bye.")
+	} else {
+		log.Fatal(err)
+	}
+}
+
+func waitShutdownSignal(srv *http.Server, done chan<- struct{}) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	signal := <-signals
+	log.Printf("Received shutdown signal %q", signal)
+	if err := srv.Shutdown(context.Background()); err != nil {
+		log.Printf("Shutdown error: %v", err)
+	} else {
+		log.Printf("Shutdown.")
+	}
+	close(done)
 }
 
 func bindAddress() string {
