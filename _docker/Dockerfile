@@ -4,7 +4,7 @@ WORKDIR /home
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN ARTEFACT_NAME=contacts.app OUT_DIR=/home make local.build
+RUN ARTEFACT_NAME=contacts.app OUT_DIR=/home make executable
 
 FROM alpine:3
 WORKDIR /home
