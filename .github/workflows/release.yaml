@@ -13,26 +13,13 @@ jobs:
       OUT_DIR: ${{ github.workspace }}/_OUTPUT
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkoug
+      - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Go toolchain
-        uses: actions/setup-go@v4
+      - name: Docker Registry Login
+        uses: docker/login-action@v3
         with:
-          go-version-file: 'go.mod'
-      - name: Make
-        run: make build.all
-      - name: Create Release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          _opstools/octoact_create_release \
-            -repo-owner ${{ github.repository_owner }} \
-            -repo Contacts.app \
-            -release-name "Release ${{ github.ref_type }} ${{ github.ref_name }}" \
-            -assets-dir ${{ env.OUT_DIR }}
-      - name: Upload Artefact
-        uses: actions/upload-artifact@v3
-        with:
-          if-no-files-found: error
-          name: release_files
-          path: ${{ env.OUT_DIR }}
+          registry: 'registry.digitalocean.com'
+          username: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          password: ${{ secrets.DIGITALOCEAN_TOKEN }}
+      - name: Build
+        run: make deployed

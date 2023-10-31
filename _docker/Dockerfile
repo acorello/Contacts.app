@@ -4,10 +4,9 @@ WORKDIR /home
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN ARTEFACT_NAME=contacts.app OUT_DIR=/home make executable
+RUN make executable ARTEFACT_PATH=/home/app
 
 FROM alpine:3
-WORKDIR /home
-COPY --from=builder /home/contacts.app .
+COPY --from=builder /home/app /home/app
 EXPOSE 8080
-ENTRYPOINT [ "/home/contacts.app" ]
+ENTRYPOINT [ "/home/app" ]
