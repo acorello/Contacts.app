@@ -1,0 +1,5 @@
+.gitattributes
+.github/
+.vscode/
+_tmp/
+_docker/

@@ -1,25 +1,21 @@
 OUT_DIR?=_tmp/built
+ARTEFACT_NAME?=contacts-app
 
-.PHONY: .build
-.build: ARTEFACT_NAME?=contacts.$(GOOS)
-.build: ARTEFACT_PATH=$(OUT_DIR)/$(ARTEFACT_NAME)
-.build:
+$(OUT_DIR):
 	@mkdir -p $(OUT_DIR)
+
+.PHONY: local.build
+local.build: ARTEFACT_PATH=$(OUT_DIR)/$(ARTEFACT_NAME)
+local.build: $(OUT_DIR)
 	@echo "Building" $(ARTEFACT_PATH)
-	@GOOS=$(GOOS) go build -trimpath -o $(ARTEFACT_PATH)
+	@go build -trimpath -o $(ARTEFACT_PATH)
 
-.PHONY: build.linux
-build.linux: GOOS = linux
-build.linux: .build
-
-.PHONY: build.macos
-build.macos: GOOS = darwin
-build.macos: .build
-
-.PHONY: build.all
-build.all: build.linux build.macos
-
-.PHONY: clean
-clean:
+.PHONY: local.clean
+local.clean:
 	@echo "Deleting $(OUT_DIR)"
 	@rm -rf $(OUT_DIR)
+
+.PHONY: docker.image
+docker.image:
+	@echo "Building docker image: " $(ARTEFACT_PATH)
+	@docker build --tag $(ARTEFACT_NAME) --file _docker/Dockerfile .
