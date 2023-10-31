@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"dev.acorello.it/go/contacts/contact"
 	http_contact "dev.acorello.it/go/contacts/contact/http"
@@ -33,11 +34,19 @@ func main() {
 		mux.HandleFunc("/", LoggingHandler(homeRedirect))
 	}
 
-	address := "0.0.0.0:8080"
+	address := bindAddress()
 	log.Printf("Starting server at %q", address)
 	if serverErr := http.ListenAndServe(address, mux); serverErr != nil {
 		log.Fatal(serverErr)
 	}
+}
+
+func bindAddress() string {
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost"
+	}
+	return host + ":8080"
 }
 
 func LoggingHandler(h http.Handler) http.HandlerFunc {
