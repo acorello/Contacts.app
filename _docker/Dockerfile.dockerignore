@@ -1,6 +1,7 @@
 .gitattributes
 .github/
 .vscode/
+.git/
 _tmp/
 _docker/
 README.md
