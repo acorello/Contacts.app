@@ -47,12 +47,11 @@ The tutorial uses the case of an address-book CRUD application to demonstrate ho
 - be a production-realistic example (eg. don't worry about authentication, security, observability, testing, etc.)
 - precise validation and error reporting
 - data-persistance
-- DRY-out all the things
 - …etc
 
 ## Constraints
 
-1. use only Go stdlib and don't spend time re-inventing a fancy web or validation framework
+1. use only Go stdlib
 
    1. therefore, I haven't used paths pattern-matching (eg. `/myentity/:id/property`). Instead I pass all the dynamic values in the URL query
    1. no reflection or generic logic to associate http-handlers with http methods. Instead I use a `switch-case` on the http-method value.
