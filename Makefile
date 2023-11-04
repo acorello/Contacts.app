@@ -5,6 +5,7 @@ CONTAINER_REGISTRY=registry.digitalocean.com/acorello
 IMAGE_REPOSITORY_TAGGED_NAME=$(CONTAINER_REGISTRY)/$(IMAGE_TAGGED_NAME)
 
 .PHONY: executable
+# also called within Dockerfile
 executable:
 	@echo "Building" $(ARTEFACT_PATH)
 	@go build -trimpath -o $(ARTEFACT_PATH)
@@ -22,5 +23,5 @@ container: container.image
 	@docker run --rm --env HOST=0.0.0.0 -p 8080:8080 $(IMAGE_TAGGED_NAME)
 
 .PHONY: deployed
-deployed: container.image
+container.image.pushed: container.image
 	@docker push $(IMAGE_REPOSITORY_TAGGED_NAME)
