@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"dev.acorello.it/go/contacts/contact"
 	http_contact "dev.acorello.it/go/contacts/contact/http"
@@ -35,6 +37,14 @@ func main() {
 		mux.HandleFunc(validatedPaths.Root.String(), LoggingHandler(contactHandler))
 		homeRedirect := http.RedirectHandler(validatedPaths.List.String(), http.StatusFound)
 		mux.HandleFunc("/", LoggingHandler(homeRedirect))
+		mux.HandleFunc("/time", func(w http.ResponseWriter, r *http.Request) {
+			n := time.Now().Format(time.RFC1123Z)
+			if _, err := fmt.Fprint(w, n, "\n"); err != nil {
+				log.Printf("error reporting time: %v", err)
+			} else {
+				log.Printf("/time reported %q", n)
+			}
+		})
 	}
 
 	var srv = http.Server{
