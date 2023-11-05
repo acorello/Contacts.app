@@ -9,6 +9,11 @@
     <script src="/public/vendored/htmx.js"></script>
     <link rel="stylesheet" href="/public/pico.classless.css">
     <title>Contacts App</title>
+    <style>
+        footer {
+            text-align: center;
+        }
+    </style>
 </head>
 {{ end }}
 
@@ -24,7 +29,9 @@
     </main>
     {{ end }}
     {{ block "footer" . }}
-    <footer>I 🩵 HTMX</footer>
+    <footer>
+        <p>I 🩵 HTMX</p>
+    </footer>
     {{ end }}
 </body>
 
