@@ -1,6 +1,6 @@
 # A REST-ful DDD-organized Web app to learn Go, its stdlib, and HTMX
 
-## Live [Demo](https://contacts-app-pvmav.ondigitalocean.app/)
+## Live [Demo](https://contacts-app.fly.dev)
 
 The application replicates exactly the one used in the book [Hypermedia Systems](https://hypermedia.systems) (a tutorial about HTMX, HyperView and REST-fulness) but it's designed according to some self-imposed constraints and design principles.
 
