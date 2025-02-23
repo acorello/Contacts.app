@@ -1,12 +1,12 @@
 # A REST-ful DDD-organized Web app to learn Go, its stdlib, and HTMX
 
-## Live [Demo](https://contacts-app.fly.dev)
+## Live [Demo](https://contacts-app.fly.dev) deployed on [fly.io](https://fly.io)
 
 The application replicates exactly the one used in the book [Hypermedia Systems](https://hypermedia.systems) (a tutorial about HTMX, HyperView and REST-fulness) but it's designed according to some self-imposed constraints and design principles.
 
 The tutorial presents a single entity: the Contact; but I'm writing the project as if more will come.
 
-## An HTMX example
+## HTMX: an example
 
 ```html
 <input
@@ -27,9 +27,9 @@ More examples and excellent docs about HTMX can be found on [the HTMX docs homep
 
 ## Application and HTMX features implemented
 
-The tutorial uses the case of an address-book CRUD application to demonstrate how to:
+The tutorial uses the requirements of an address-book CRUD application to demonstrate how to:
 
-- turn a traditional full-page refresh web-app into a smoother UI\UX (no full-page refresh) without changing the server-side implemntation, by just adding the `hx-boost` to the HTML body
+- remove the jarring "full-page refresh" for a smooth UI\UX (no flash of unstyled content) without changing the server-side implemntation, by just adding the `hx-boost` to the HTML body
 - implement a simple search functionality
 - implement pagination with on-demand or continuous scrolling
 - send request with HTTP methods not natively supported by HTML (eg. DELETE)
