@@ -2,13 +2,12 @@ package http
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
-
-	"html/template"
 
 	"dev.acorello.it/go/contacts/contact"
 	"dev.acorello.it/go/contacts/contact/http/ht"
@@ -23,7 +22,8 @@ type ResourcePaths struct {
 
 type validResourcePaths ResourcePaths
 
-// paths should be distinct or this will panic
+// Validated checks that:
+// - paths are distinct
 func (my ResourcePaths) Validated() (v validResourcePaths, err error) {
 	if seq.HasDuplicates(my.Root, my.Form, my.List, my.Email) {
 		return v, fmt.Errorf("path elements must be unique. Got %+v", my)
@@ -44,8 +44,8 @@ func NewContactHandler(paths validResourcePaths, repo contact.Repository) contac
 }
 
 func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch p := r.URL.Path; p {
-	case h.Root.Path():
+	switch ResourcePath(r.URL.Path) {
+	case h.Root:
 		switch r.Method {
 		case http.MethodGet:
 			h.Get(w, r)
@@ -54,7 +54,7 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.Form.Path():
+	case h.Form:
 		switch r.Method {
 		case http.MethodGet:
 			h.GetForm(w, r)
@@ -63,14 +63,14 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.List.Path():
+	case h.List:
 		switch r.Method {
 		case http.MethodGet:
 			h.GetList(w, r)
 		default:
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
-	case h.Email.Path():
+	case h.Email:
 		switch r.Method {
 		case http.MethodPatch:
 			h.PatchEmail(w, r)
@@ -78,7 +78,7 @@ func (h contactHTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			_http.RespondErrMethodNotImplemented(w, r)
 		}
 	default:
-		errorMsg := fmt.Sprintf("Path %q is not supported", p)
+		errorMsg := fmt.Sprintf("Path %q is not supported", r.URL.Path)
 		log.Println(errorMsg)
 		http.Error(w, errorMsg, http.StatusNotFound)
 	}
