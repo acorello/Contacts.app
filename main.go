@@ -20,8 +20,10 @@ import (
 var repo = contact.NewPopulatedInMemoryContactRepository()
 
 var CommitHash = func() string {
-	if info, ok := debug.ReadBuildInfo(); ok {
-		for _, setting := range info.Settings {
+	if sha, found := os.LookupEnv("GITHUB_SHA"); found {
+		return sha
+	} else if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range buildInfo.Settings {
 			if setting.Key == "vcs.revision" {
 				return setting.Value
 			}
