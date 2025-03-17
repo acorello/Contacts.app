@@ -50,25 +50,9 @@ func main() {
 		mux.HandleFunc(validatedPaths.Root.String(), LoggingHandler(contactHandler))
 		homeRedirect := http.RedirectHandler(validatedPaths.List.String(), http.StatusFound)
 		mux.HandleFunc("/", LoggingHandler(homeRedirect))
-		mux.HandleFunc("/time", func(w http.ResponseWriter, r *http.Request) {
-			now := time.Now().Format(time.RFC1123Z)
-			_, err := fmt.Fprint(w, now, "\n")
-			if err != nil {
-				log.Printf("error reporting time: %v", err)
-			} else {
-				log.Printf("/time reported %q", now)
-			}
-		})
-		mux.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
-			_, err := fmt.Fprintf(w, "Commit: %s\n", CommitHash)
-			if err != nil {
-				log.Printf("error reporting version: %v", err)
-			} else {
-				log.Printf("/version reported %q", CommitHash)
-			}
-		})
 	}
 
+	mux.HandleFunc(healthCheckPath, healthcheck)
 	var srv = http.Server{
 		Addr:    bindAddress(),
 		Handler: mux,
@@ -111,5 +95,17 @@ func LoggingHandler(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf(`serving '%s %s'`, r.Method, r.URL)
 		h.ServeHTTP(w, r)
+	}
+}
+
+const healthCheckPath = "/healthcheck"
+
+func healthcheck(w http.ResponseWriter, r *http.Request) {
+	now := time.Now().Format(time.RFC1123Z)
+	_, err := fmt.Fprintf(w, "Commit: %s\nTime: %s\n", CommitHash, now)
+	if err != nil {
+		log.Printf("error reporting %s: %v", healthCheckPath, err)
+	} else {
+		log.Printf("%s reported\n", healthCheckPath)
 	}
 }
