@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 	"time"
 
@@ -16,6 +18,17 @@ import (
 )
 
 var repo = contact.NewPopulatedInMemoryContactRepository()
+
+var CommitHash = func() string {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			if setting.Key == "vcs.revision" {
+				return setting.Value
+			}
+		}
+	}
+	return "🤷"
+}()
 
 func main() {
 	mux := http.NewServeMux()
@@ -38,11 +51,20 @@ func main() {
 		homeRedirect := http.RedirectHandler(validatedPaths.List.String(), http.StatusFound)
 		mux.HandleFunc("/", LoggingHandler(homeRedirect))
 		mux.HandleFunc("/time", func(w http.ResponseWriter, r *http.Request) {
-			n := time.Now().Format(time.RFC1123Z)
-			if _, err := fmt.Fprint(w, n, "\n"); err != nil {
+			now := time.Now().Format(time.RFC1123Z)
+			_, err := fmt.Fprint(w, now, "\n")
+			if err != nil {
 				log.Printf("error reporting time: %v", err)
 			} else {
-				log.Printf("/time reported %q", n)
+				log.Printf("/time reported %q", now)
+			}
+		})
+		mux.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
+			_, err := fmt.Fprintf(w, "Commit: %s\n", CommitHash)
+			if err != nil {
+				log.Printf("error reporting version: %v", err)
+			} else {
+				log.Printf("/version reported %q", CommitHash)
 			}
 		})
 	}
@@ -56,7 +78,7 @@ func main() {
 	go waitShutdownSignal(&srv, shutdownDone)
 
 	log.Printf("Starting server at %q", srv.Addr)
-	if err := srv.ListenAndServe(); err == http.ErrServerClosed {
+	if err := srv.ListenAndServe(); errors.Is(err, http.ErrServerClosed) {
 		<-shutdownDone
 		log.Printf("Bye.")
 	} else {
