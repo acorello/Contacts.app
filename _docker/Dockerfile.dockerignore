@@ -1,7 +1,8 @@
 .gitattributes
+.gitignore
 .github/
 .vscode/
-.git/
+.idea/
 _tmp/
 _docker/
 README.md

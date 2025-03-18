@@ -1,9 +1,11 @@
-FROM golang:1.24.1 as builder
+FROM golang:1.24.1 AS builder
 ENV CGO_ENABLED='0'
 WORKDIR /home
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
+RUN ls -a
+RUN echo SHA: $(git rev-parse HEAD)
 RUN make executable ARTEFACT_PATH=/home/app
 
 FROM alpine:3
