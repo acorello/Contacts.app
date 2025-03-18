@@ -6,7 +6,7 @@ RUN go mod download
 COPY . .
 RUN make executable ARTEFACT_PATH=/home/app
 
-FROM alpine:3
+FROM scratch
 COPY --from=builder /home/app /home/app
 EXPOSE 8080
 ENTRYPOINT [ "/home/app" ]
