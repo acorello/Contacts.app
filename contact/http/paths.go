@@ -10,9 +10,9 @@ const (
 	CustomerId = "Id"
 )
 
-type ResourcePath string
+type Path string
 
-func (me ResourcePath) Add(param, value string) ResourcePath {
+func (me Path) Add(param, value string) Path {
 	params := url.Values{}
 	params.Add(param, value)
 	_current := string(me)
@@ -22,17 +22,13 @@ func (me ResourcePath) Add(param, value string) ResourcePath {
 	} else {
 		separator = "?"
 	}
-	return ResourcePath(_current + separator + params.Encode())
+	return Path(_current + separator + params.Encode())
 }
 
-func (me ResourcePath) Path() string {
-	return string(me)
-}
-
-func (me ResourcePath) TemplateURL() template.URL {
+func (me Path) TemplateURL() template.URL {
 	return template.URL(me)
 }
 
-func (me ResourcePath) String() string {
+func (me Path) String() string {
 	return string(me)
 }

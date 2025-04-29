@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"dev.acorello.it/go/contacts/contact"
-	http_contact "dev.acorello.it/go/contacts/contact/http"
+	contactHTTP "dev.acorello.it/go/contacts/contact/http"
 	"dev.acorello.it/go/contacts/public_assets"
 )
 
@@ -35,10 +35,9 @@ var CommitHash = func() string {
 func main() {
 	mux := http.NewServeMux()
 	const publicRootPath = "/public/"
-	mux.HandleFunc(publicRootPath,
-		LoggingHandler(http.StripPrefix(publicRootPath, public_assets.FileServer())))
+	mux.Handle(publicRootPath, http.StripPrefix(publicRootPath, public_assets.FileServer()))
 
-	contactResourcePaths := http_contact.ResourcePaths{
+	contactResourcePaths := contactHTTP.Paths{
 		Root:  "/contact/",
 		Form:  "/contact/form",
 		List:  "/contact/list",
@@ -48,16 +47,15 @@ func main() {
 	if validatedPaths, err := contactResourcePaths.Validated(); err != nil {
 		log.Fatal(err)
 	} else {
-		contactHandler := http_contact.NewContactHandler(validatedPaths, &repo)
-		mux.HandleFunc(validatedPaths.Root.String(), LoggingHandler(contactHandler))
+		contactHTTP.RegisterHandlers(mux, validatedPaths, &repo)
 		homeRedirect := http.RedirectHandler(validatedPaths.List.String(), http.StatusFound)
-		mux.HandleFunc("/", LoggingHandler(homeRedirect))
+		mux.Handle("/", homeRedirect)
 	}
 
 	mux.HandleFunc(healthCheckPath, healthcheck)
 	var srv = http.Server{
 		Addr:    bindAddress(),
-		Handler: mux,
+		Handler: LoggingHandler(mux),
 	}
 
 	shutdownDone := make(chan struct{})
