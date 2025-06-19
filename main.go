@@ -15,6 +15,7 @@ import (
 	"dev.acorello.it/go/contacts/contact"
 	contactHTTP "dev.acorello.it/go/contacts/contact/http"
 	"dev.acorello.it/go/contacts/public_assets"
+	"github.com/acorello/uttpil"
 )
 
 var repo = contact.NewPopulatedInMemoryContactRepository()
@@ -55,7 +56,7 @@ func main() {
 	mux.HandleFunc(healthCheckPath, healthcheck)
 	var srv = http.Server{
 		Addr:    bindAddress(),
-		Handler: LoggingHandler(mux),
+		Handler: uttpil.LoggingHandler(mux),
 	}
 
 	shutdownDone := make(chan struct{})
@@ -89,13 +90,6 @@ func bindAddress() string {
 		host = "localhost"
 	}
 	return host + ":8080"
-}
-
-func LoggingHandler(h http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf(`serving '%s %s'`, r.Method, r.URL)
-		h.ServeHTTP(w, r)
-	}
 }
 
 const healthCheckPath = "/healthcheck"

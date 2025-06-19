@@ -7,4 +7,4 @@ require (
 	golang.org/x/net v0.37.0
 )
 
-require github.com/acorello/uttpil v0.0.0-20250429142058-37fa7fd3703d // indirect
+require github.com/acorello/uttpil v0.0.0-20250619131818-90a2ad089866 // indirect
