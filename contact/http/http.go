@@ -8,10 +8,12 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"dev.acorello.it/go/contacts/contact"
 	"dev.acorello.it/go/contacts/contact/http/ht"
 	"dev.acorello.it/go/contacts/seq"
+	"github.com/acorello/must"
 	"github.com/acorello/uttpil"
 )
 
@@ -58,33 +60,28 @@ type contactHTTPHandler struct {
 
 func (h contactHTTPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
-	id, err := contact.ParseId(q.Get(CustomerId))
-	if err != nil {
+	if !q.Has(CustomerId) {
+		w.WriteHeader(http.StatusBadRequest)
+	} else if id, err := contact.ParseId(q.Get(CustomerId)); err != nil {
 		errMsg := fmt.Sprintf("Failed to parse id %q: %v", q.Get(CustomerId), err)
 		http.Error(w, errMsg, http.StatusBadRequest)
-		return
-	}
-	contact, found := h.contactRepository.FindById(id)
-	hasIdArg := q.Has(CustomerId)
-	if hasIdArg && !found {
+	} else if theContact, found := h.contactRepository.FindById(id); !found {
 		w.WriteHeader(http.StatusNotFound)
-	} else if !hasIdArg {
-		w.WriteHeader(http.StatusBadRequest)
 	} else {
-		// should I move error handling within the template package? maybe better now to just panic?
-		_id := contact.Id.String()
+		_id := theContact.Id.String()
 		urls := ht.ContactPageURLs{
 			ContactList: template.URL(h.paths.List),
 			ContactForm: h.paths.Form.Add(CustomerId, _id).TemplateURL(),
 		}
-		if err := ht.WriteContact(w, contact, urls); err != nil {
+		err = ht.WriteContact(w, theContact, urls)
+		if err != nil {
 			log.Printf("error rendering template: %v", err)
 		}
 	}
 }
 
 func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	form, err := uttpil.NewUrlValues(r)
+	form, err := uttpil.NewUrlValuesHelper(r)
 	if err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
@@ -95,7 +92,7 @@ func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		log.Print(msg)
 		return
 	}
-	_id := form.Trim(CustomerId)
+	_id := form.Get(CustomerId, strings.TrimSpace)
 	id, err := contact.ParseId(_id)
 	if err != nil {
 		errMsg := fmt.Sprintf("Failed to parse id %q: %v", _id, err)
@@ -108,17 +105,17 @@ func (h contactHTTPHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 	var renderingError error
-	form, err := uttpil.NewUrlValues(r)
+	form, err := uttpil.NewUrlValuesHelper(r) // confusingly enough, the library decodes a form into url.Values,
 	if err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
 	}
-	contact, errors := parseContact(form)
+	theContact, errors := parseContact(form)
 	if errors != nil && len(errors) > 0 {
 		log.Printf("Error parsing contact form: %+v", errors)
-		contactForm := ht.NewFormWith(contact)
+		contactForm := ht.NewFormWith(theContact)
 		contactForm.Errors = errors
-		_id := contact.Id.String()
+		_id := theContact.Id.String()
 		renderingError = ht.WriteContactForm(w, ht.ContactFormPage{
 			ContactForm: contactForm,
 			URLs: ht.ContactFormPageURLs{
@@ -127,8 +124,8 @@ func (h contactHTTPHandler) PostForm(w http.ResponseWriter, r *http.Request) {
 			},
 		})
 	} else {
-		h.contactRepository.Store(contact)
-		log.Printf("Stored: %#v", contact)
+		h.contactRepository.Store(theContact)
+		log.Printf("Stored: %#v", theContact)
 		http.Redirect(w, r, h.paths.List.String(), http.StatusFound)
 	}
 	if renderingError != nil {
@@ -185,13 +182,13 @@ func (h contactHTTPHandler) GetForm(w http.ResponseWriter, r *http.Request) {
 
 // PatchEmail is only used for validation purposes at the moment
 func (h contactHTTPHandler) PatchEmail(w http.ResponseWriter, r *http.Request) {
-	q, err := uttpil.NewUrlValues(r)
+	q, err := uttpil.NewUrlValuesHelper(r)
 	if err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
 	}
-	contactId := contact.Id(q.Trim(CustomerId))
-	contactEmail := q.Trim("Email")
+	contactId := contact.Id(q.Get(CustomerId, strings.TrimSpace))
+	contactEmail := q.Get("Email", strings.TrimSpace)
 	log.Printf("validating e-mail %q for contactId %q", contactEmail, contactId)
 	existingContactId, found := h.contactRepository.FindIdByEmail(contactEmail)
 	if found && existingContactId != contactId {
@@ -203,15 +200,16 @@ func (h contactHTTPHandler) PatchEmail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
-	q, err := uttpil.NewUrlValues(r)
+	q, err := uttpil.NewUrlValuesHelper(r)
 	if err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
 	}
-	searchTerm := q.Trim("SearchTerm")
+	searchTerm := q.Get("SearchTerm", strings.TrimSpace)
+	// does it make sense to create a separate object dedicated to the parsing?
 	page := contact.Page{
-		Offset: q.IntOrPanic("pageOffset", 0),
-		Size:   q.IntOrPanic("pageSize", 0),
+		Offset: must.Get(asInt(q.Get("pageOffset"), 0)),
+		Size:   must.Get(asInt(q.Get("pageSize"), 0)),
 	}
 	page.Offset = max(page.Offset, 0)
 	page.Size = max(page.Size, 10)
@@ -242,6 +240,18 @@ func (h contactHTTPHandler) GetList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func asInt(s string, whenBlank int) (int, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return whenBlank, nil
+	}
+	if v, err := strconv.Atoi(s); err != nil {
+		return 0, fmt.Errorf("failed to parse %q: %v", s, err)
+	} else {
+		return v, nil
+	}
+}
+
 func searchPageURL(page contact.Page, searchTerm, searchPagePath string) template.URL {
 	q := url.Values{}
 	if searchTerm != "" {
@@ -258,38 +268,52 @@ func searchPageURL(page contact.Page, searchTerm, searchPagePath string) templat
 
 var nameRegEx = re{regexp.MustCompile(`^\w+(?:[- ']\w+)*$`)}
 
-func parseContact(form uttpil.UrlValues) (c contact.Contact, err map[string]error) {
-	errors := make(map[string]error)
-	getAndCollect := func(get func(string) (string, error), key string, variable *string, validators ...func(string) error) {
-		val, err := get(key)
-		*variable = val
-		if err != nil {
-			errors[key] = err
-			return
+func parseContact(form uttpil.UrlValuesHelper) (c contact.Contact, err map[string]error) {
+	form.Give(CustomerId, func(val string) error {
+		val = strings.TrimSpace(val)
+		if val == "" {
+			c.Id = contact.NewId()
+			log.Printf("Got blank contact id assuming new contact, assigning new id %q", c.Id)
+			return nil
 		}
-		for _, v := range validators {
-			err := v(val)
-			if err != nil {
-				errors[key] = err
-				return
-			}
+		if id, err := contact.ParseId(val); err != nil {
+			return err
+		} else {
+			c.Id = id
+			return nil
 		}
-	}
-	if _id := form.Trim(CustomerId); _id == "" {
-		c.Id = contact.NewId()
-		// TODO: prhaps I shall differentiate this case using PUT / POST
-		log.Printf("Got blank contact id assuming new contact, assigning new id %q", c.Id)
-	} else if id, err := contact.ParseId(_id); err != nil {
-		errors[CustomerId] = err
-	} else {
-		c.Id = id
-	}
-
-	getAndCollect(form.Trim_NotBlank, "FirstName", &c.FirstName, nameRegEx.Validate)
-	getAndCollect(form.Trim_NotBlank, "LastName", &c.LastName)
-	getAndCollect(form.Trim_NotBlank, "Email", &c.Email)
-	c.Phone = form.Trim("Phone")
-	return c, errors
+	})
+	form.Give("FirstName", func(value string) error {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return fmt.Errorf("blank")
+		} else if !nameRegEx.MatchString(value) {
+			return fmt.Errorf("invalid name")
+		}
+		c.FirstName = value
+		return nil
+	})
+	form.Give("LastName", func(value string) error {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return fmt.Errorf("blank")
+		}
+		c.LastName = value
+		return nil
+	})
+	form.Give("Email", func(value string) error {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return fmt.Errorf("blank")
+		}
+		c.Email = value
+		return nil
+	})
+	form.Give("Phone", func(value string) error {
+		c.Phone = strings.TrimSpace(value)
+		return nil
+	})
+	return c, form.Errors()
 }
 
 type re struct {

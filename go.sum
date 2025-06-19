@@ -1,7 +1,7 @@
-github.com/acorello/uttpil v0.0.0-20250429142058-37fa7fd3703d h1:OyOsuptvz9LnT3COpF4XtVck0yTo9U3KGjIbM+0wH7U=
-github.com/acorello/uttpil v0.0.0-20250429142058-37fa7fd3703d/go.mod h1:Ecrb1Kl8BmSBA85csBeCAfgHPTcml4MJJIZlFmNq1rI=
-github.com/acorello/uttpil v0.0.0-20250619131818-90a2ad089866 h1:rSsJha5C6LXNHVxzNM64wAsZYix6n6jsGC4GOvkHNXM=
-github.com/acorello/uttpil v0.0.0-20250619131818-90a2ad089866/go.mod h1:Ecrb1Kl8BmSBA85csBeCAfgHPTcml4MJJIZlFmNq1rI=
+github.com/acorello/must v0.1.0 h1:0IVQP/YwPwQHzT2T3zkftNlFUAG1mZsmi+4t4W9WVrs=
+github.com/acorello/must v0.1.0/go.mod h1:8xzrO2DOexvDmj6oW7l6Lli5mxc6tWauDDara0lbE8E=
+github.com/acorello/uttpil v0.0.0-20250619171426-08dffd395489 h1:+mf7ZOAVjkRBNVJIgXhBakYyi0d8T/QtDOM1jow8lP0=
+github.com/acorello/uttpil v0.0.0-20250619171426-08dffd395489/go.mod h1:Ecrb1Kl8BmSBA85csBeCAfgHPTcml4MJJIZlFmNq1rI=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 golang.org/x/net v0.37.0 h1:1zLorHbz+LYj7MQlSf1+2tPIIgibq2eL5xkrGk6f+2c=
